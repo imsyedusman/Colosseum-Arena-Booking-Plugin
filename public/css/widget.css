@@ -1,0 +1,435 @@
+:root {
+    --cab-primary: #8b5cf6;
+    --cab-primary-hover: #7c3aed;
+    --cab-secondary: #f1f5f9;
+    --cab-secondary-hover: #e2e8f0;
+    --cab-success: #10b981;
+    --cab-success-hover: #059669;
+    --cab-text-dark: #1e293b;
+    --cab-text-muted: #64748b;
+    --cab-border: #e2e8f0;
+    --cab-bg: #ffffff;
+    --cab-card-bg: #f8fafc;
+    --cab-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    --cab-glow: 0 0 15px rgba(139, 92, 246, 0.3);
+    --cab-radius: 12px;
+}
+
+/* Glassmorphism Wrapper for modern feel */
+.cab-wrapper {
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    max-width: 650px;
+    margin: 2rem auto;
+    background: var(--cab-bg);
+    border-radius: var(--cab-radius);
+    box-shadow: var(--cab-shadow);
+    overflow: hidden;
+    position: relative;
+    color: var(--cab-text-dark);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    /* For dark themes on client sites, adjust variables directly or add body classes */
+}
+
+/* Loader Overlay */
+.cab-loader {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(5px);
+    z-index: 50;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.cab-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--cab-primary);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: cab-spin 1s linear infinite;
+}
+
+@keyframes cab-spin {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Header */
+.cab-header {
+    background: linear-gradient(135deg, #4f46e5 0%, #8b5cf6 100%);
+    padding: 2rem;
+    color: white;
+    text-align: center;
+    position: relative;
+}
+
+.cab-title {
+    margin: 0 0 1rem 0;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: white;
+    letter-spacing: -0.025em;
+}
+
+/* Progress */
+.cab-progress-container {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+.cab-progress-bar {
+    height: 100%;
+    background: #fff;
+    width: 20%;
+    transition: width 0.4s ease;
+}
+
+.cab-steps-indicator {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 10%;
+}
+
+.step-dot {
+    width: 12px;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.step-dot.active {
+    background: #fff;
+    transform: scale(1.3);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+}
+
+/* Body */
+.cab-body {
+    padding: 2rem;
+}
+
+.cab-step {
+    display: none;
+    animation: cab-fade-in 0.4s ease forwards;
+}
+
+.cab-step.active {
+    display: block;
+}
+
+@keyframes cab-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.cab-step-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: var(--cab-text-dark);
+}
+
+.cab-subtitle {
+    font-size: 0.9rem;
+    color: var(--cab-text-muted);
+    margin-top: -1rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Services Grid */
+.cab-grid-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.cab-service-card {
+    border: 2px solid var(--cab-border);
+    border-radius: var(--cab-radius);
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--cab-bg);
+}
+
+.cab-service-card:hover {
+    border-color: var(--cab-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--cab-glow);
+}
+
+.cab-service-card.selected {
+    border-color: var(--cab-primary);
+    background: rgba(139, 92, 246, 0.05);
+}
+
+.cab-svc-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.cab-svc-info {
+    font-size: 0.85rem;
+    color: var(--cab-text-muted);
+    display: flex;
+    justify-content: space-between;
+}
+
+.cab-svc-price {
+    font-weight: 700;
+    color: var(--cab-primary);
+}
+
+/* Inputs & Form layout */
+.cab-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--cab-border);
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.cab-input:focus {
+    border-color: var(--cab-primary);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+}
+
+.cab-form-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.cab-form-group {
+    flex: 1;
+}
+
+.cab-form-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+    color: var(--cab-text-dark);
+}
+
+/* Time Slots */
+.cab-slots-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 0.75rem;
+}
+
+.cab-slot-item {
+    border: 1px solid var(--cab-border);
+    border-radius: 8px;
+    padding: 0.75rem;
+    text-align: center;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2sease;
+    background: var(--cab-card-bg);
+}
+
+.cab-slot-item:hover {
+    background: var(--cab-primary);
+    color: white;
+    border-color: var(--cab-primary);
+    box-shadow: var(--cab-glow);
+}
+
+.cab-slot-item.selected {
+    background: var(--cab-primary);
+    color: white;
+    border-color: var(--cab-primary);
+    transform: scale(1.05);
+}
+
+/* Payment & Summary */
+.cab-summary-box {
+    background: var(--cab-card-bg);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px dashed var(--cab-primary);
+}
+
+.cab-summary-box h4 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    color: var(--cab-primary);
+}
+
+.cab-summary-box p {
+    margin: 0.5rem 0;
+    font-size: 0.95rem;
+}
+
+.cab-payment-methods {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.cab-payment-option {
+    cursor: pointer;
+}
+
+.cab-payment-option input {
+    display: none;
+}
+
+.cab-payment-content {
+    border: 2px solid var(--cab-border);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    transition: all 0.2s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--cab-bg);
+}
+
+.cab-payment-content i {
+    font-size: 1.5rem;
+    color: var(--cab-text-muted);
+}
+
+.cab-payment-option input:checked+.cab-payment-content {
+    border-color: var(--cab-primary);
+    background: rgba(139, 92, 246, 0.05);
+}
+
+.cab-payment-option input:checked+.cab-payment-content i {
+    color: var(--cab-primary);
+}
+
+/* Actions */
+.cab-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+    border-top: 1px solid var(--cab-border);
+    padding-top: 1.5rem;
+}
+
+.cab-step-1 .cab-actions {
+    justify-content: right;
+}
+
+/* Adjust specifically if needed */
+
+.cab-btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.cab-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.cab-btn-primary {
+    background: var(--cab-primary);
+    color: white;
+}
+
+.cab-btn-primary:hover:not(:disabled) {
+    background: var(--cab-primary-hover);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.cab-btn-secondary {
+    background: var(--cab-secondary);
+    color: var(--cab-text-dark);
+}
+
+.cab-btn-secondary:hover:not(:disabled) {
+    background: var(--cab-secondary-hover);
+}
+
+.cab-btn-success {
+    background: var(--cab-success);
+    color: white;
+}
+
+.cab-btn-success:hover:not(:disabled) {
+    background: var(--cab-success-hover);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* Success View */
+.cab-success-content {
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+.cab-success-icon {
+    font-size: 4rem;
+    color: var(--cab-success);
+    margin-bottom: 1.5rem;
+    animation: cab-bounce 1s ease infinite;
+}
+
+@keyframes cab-bounce {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+/* Responsive */
+@media (max-width: 500px) {
+    .cab-form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .cab-form-group {
+        margin-bottom: 1rem;
+    }
+
+    .cab-payment-methods {
+        grid-template-columns: 1fr;
+    }
+}

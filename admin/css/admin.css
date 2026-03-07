@@ -1,0 +1,18 @@
+/* Custom overrides for DataTables to play nicely with Tailwind and WP Admin */
+.wrap.cab-wrap {
+    margin-top: 20px;
+}
+.cab-modal {
+    background-color: rgba(0,0,0,0.5);
+    z-index: 99999;
+}
+/* Fix for WP menu overlap */
+#adminmenuwrap {
+    z-index: 1000;
+}
+#wpadminbar {
+    z-index: 1001;
+}
+table.dataTable tbody td {
+    vertical-align: middle;
+}
