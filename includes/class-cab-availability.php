@@ -75,16 +75,18 @@ class CABA_Availability {
 
 				$is_overlapping = false;
 				
-				foreach ( $room_bookings as $bk ) {
-					$bk_start = strtotime( $date_str . ' ' . $bk['start_time'] );
-					$bk_end   = strtotime( $date_str . ' ' . $bk['end_time'] );
+                if ( $room_id > 0 ) {
+                    foreach ( $room_bookings as $bk ) {
+                        $bk_start = strtotime( $date_str . ' ' . $bk['start_time'] );
+                        $bk_end   = strtotime( $date_str . ' ' . $bk['end_time'] );
 
-					// Overlap condition: (StartA < EndB) and (EndA > StartB)
-					if ( $slot_start < $bk_end && $slot_end > $bk_start ) {
-						$is_overlapping = true;
-						break;
-					}
-				}
+                        // Overlap condition: (StartA < EndB) and (EndA > StartB)
+                        if ( $slot_start < $bk_end && $slot_end > $bk_start ) {
+                            $is_overlapping = true;
+                            break;
+                        }
+                    }
+                }
 
 				if ( ! $is_overlapping ) {
 					$available_slots[] = array(
@@ -95,6 +97,13 @@ class CABA_Availability {
 				}
 			}
 		}
+
+        if ( empty($available_slots) ) {
+            error_log(sprintf(
+                "CAB Availability: No slots generated for Service ID %d (%s) on date %s. Duration: %d min. Schedules count: %d.",
+                $service_id, $service['name'], $date_str, $duration_mins, count($schedules)
+            ));
+        }
 
 		return $available_slots;
 	}

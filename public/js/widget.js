@@ -258,6 +258,8 @@ document.addEventListener('DOMContentLoaded', function () {
         CabState.start_time = '';
         CabState.end_time = '';
 
+        console.log(`CAB Debug: Loading slots for Service ID ${CabState.service_id} on ${CabState.date}`);
+
         fetch(cab_public_obj.ajax_url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
@@ -296,8 +298,13 @@ document.addEventListener('DOMContentLoaded', function () {
                         });
                     });
                 } else {
+                    console.warn(`CAB Warning: No slots returned for Service ID ${CabState.service_id} on ${CabState.date}. Check schedules.`);
                     document.getElementById('cab-slots-container').innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:#64748b;">Ne pare rău, nu există locuri disponibile în această zi.</p>';
                 }
+            })
+            .catch(err => {
+                console.error("CAB Error: Failed to fetch slots", err);
+                hideLoader();
             });
     }
 
@@ -347,8 +354,13 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('input[name="cab-payment"]').forEach(radio => {
         radio.addEventListener('change', function () {
             CabState.payment_method = this.value;
+            // Update UI
+            document.querySelectorAll('.cab-payment-option').forEach(opt => opt.classList.remove('selected'));
+            this.closest('.cab-payment-option').classList.add('selected');
         });
     });
+
+    let expirationInterval = null;
 
     document.getElementById('btn-submit-booking').addEventListener('click', function () {
         showLoader();
@@ -379,8 +391,10 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(res => {
                 hideLoader();
                 if (res.success) {
-                    if (res.data && res.data.redirect) {
-                        window.location.href = res.data.redirect;
+                    if (CabState.payment_method === 'online' && res.data && res.data.redirect) {
+                        // Start Timer UI before redirect
+                        goToStep('timer');
+                        startExpirationTimer(res.data.redirect);
                     } else {
                         document.getElementById('cab-success-msg').innerText = res.data.message || 'Rezervare trimisă cu succes!';
                         goToStep('success');
@@ -390,6 +404,52 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
     });
+
+    function startExpirationTimer(redirectUrl) {
+        let timeLeft = 15 * 60; // 15 minutes
+        let timerDisplay = document.getElementById('cab-expiration-timer');
+        let checkoutLink = document.getElementById('cab-checkout-link');
+
+        checkoutLink.href = redirectUrl;
+
+        // Update display immediately
+        updateTimerDisplay(timeLeft, timerDisplay);
+
+        if (expirationInterval) clearInterval(expirationInterval);
+
+        expirationInterval = setInterval(() => {
+            timeLeft--;
+            updateTimerDisplay(timeLeft, timerDisplay);
+
+            if (timeLeft <= 0) {
+                clearInterval(expirationInterval);
+                handleTimerExpired();
+            }
+
+            // Auto-redirect after 3 seconds of showing the timer
+            if (timeLeft === (15 * 60 - 3)) {
+                window.location.href = redirectUrl;
+            }
+        }, 1000);
+    }
+
+    function updateTimerDisplay(seconds, element) {
+        let mins = Math.floor(seconds / 60);
+        let secs = seconds % 60;
+        element.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+        if (seconds < 60) {
+            element.style.color = '#ef4444'; // Red if less than 1 min
+        }
+    }
+
+    function handleTimerExpired() {
+        document.querySelector('.cab-timer-content h3').innerText = 'Timpul a Expirat';
+        document.getElementById('cab-redirect-notice').innerText = 'Rezervarea ta a fost anulată deoarece timpul a expirat.';
+        document.getElementById('cab-expiration-timer').style.color = '#ef4444';
+        document.getElementById('cab-checkout-link').innerText = 'Începe Rezervarea din nou';
+        document.getElementById('cab-checkout-link').href = window.location.href; // Refresh
+    }
 
     // Utils
     function goToStep(step) {

@@ -148,6 +148,22 @@
             </div>
         </div>
 
+        <!-- STEP: Expiration Timer (Before/During Redirect) -->
+        <div class="cab-step" id="cab-step-timer">
+            <div class="cab-timer-content">
+                <i class="fas fa-hourglass-start cab-timer-icon"></i>
+                <h3>Finalizarea Rezervării</h3>
+                <p>Rezervarea ta este temporar păstrată timp de <strong>15 minute</strong> pentru finalizarea plății.</p>
+                
+                <div class="cab-countdown" id="cab-expiration-timer">15:00</div>
+                
+                <div class="cab-timer-actions">
+                    <p id="cab-redirect-notice">Redirecționare către pagina de plată...</p>
+                    <a href="#" id="cab-checkout-link" class="cab-btn cab-btn-primary">Mergi la Plată Acum</a>
+                </div>
+            </div>
+        </div>
+
         <!-- Success Message -->
         <div class="cab-step" id="cab-step-success">
             <div class="cab-success-content">

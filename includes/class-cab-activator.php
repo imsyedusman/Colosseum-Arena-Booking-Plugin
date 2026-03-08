@@ -321,7 +321,18 @@ class Colosseum_Arena_Booking_Activator {
                         'end_time' => '22:00:00'
                     ));
                 }
-			}
+			} else {
+                // If service already exists, ensure it has at least one schedule
+                $has_sch = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM $table_schedules WHERE service_id = %d", $srv_id));
+                if (!$has_sch) {
+                    $wpdb->insert($table_schedules, array(
+                        'service_id' => $srv_id,
+                        'day_type' => 'daily',
+                        'start_time' => '10:00:00',
+                        'end_time' => '22:00:00'
+                    ));
+                }
+            }
 		}
 		
 		return $inserted;

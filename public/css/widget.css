@@ -513,6 +513,68 @@
     margin: 0;
 }
 
+/* Timer Step Styles */
+.cab-timer-content {
+    text-align: center;
+    padding: 2rem 1rem;
+}
+
+.cab-timer-icon {
+    font-size: 4rem;
+    color: var(--cab-primary);
+    margin-bottom: 1.5rem;
+    animation: cab-pulse 2s infinite;
+}
+
+@keyframes cab-pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.cab-countdown {
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: var(--cab-text-dark);
+    font-family: 'Courier New', Courier, monospace;
+    margin: 1.5rem 0;
+    background: var(--cab-secondary);
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    display: inline-block;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.cab-timer-actions {
+    margin-top: 2rem;
+}
+
+#cab-redirect-notice {
+    font-style: italic;
+    color: var(--cab-text-muted);
+    margin-bottom: 1rem;
+}
+
+/* Status dots in admin */
+.status-expired {
+    background: #94a3b8 !important;
+}
+
+.status-pending_payment_online {
+    background: #f59e0b !important;
+}
+
 .cab-cal-day {
     padding: 8px 0;
     border-radius: 6px;
