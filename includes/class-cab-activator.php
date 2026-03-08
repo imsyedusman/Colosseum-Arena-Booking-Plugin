@@ -287,13 +287,40 @@ class Colosseum_Arena_Booking_Activator {
                 $srv_id = $wpdb->insert_id;
 				$inserted['services']++;
 
-                // Give it a universal default daily schedule
-                $wpdb->insert($table_schedules, array(
-                    'service_id' => $srv_id,
-                    'day_type' => 'daily',
-                    'start_time' => '10:00:00',
-                    'end_time' => '22:00:00'
-                ));
+                // Assign Schedule
+                if ($act['name'] === 'GellyBall') {
+                    $wpdb->insert($table_schedules, array(
+                        'service_id' => $srv_id,
+                        'day_type' => 'wednesday',
+                        'start_time' => '12:00:00',
+                        'end_time' => '20:00:00'
+                    ));
+                    $wpdb->insert($table_schedules, array(
+                        'service_id' => $srv_id,
+                        'day_type' => 'thursday',
+                        'start_time' => '12:00:00',
+                        'end_time' => '20:00:00'
+                    ));
+                    $wpdb->insert($table_schedules, array(
+                        'service_id' => $srv_id,
+                        'day_type' => 'friday',
+                        'start_time' => '12:00:00',
+                        'end_time' => '20:00:00'
+                    ));
+                    $wpdb->insert($table_schedules, array(
+                        'service_id' => $srv_id,
+                        'day_type' => 'weekends', // Saturday and Sunday
+                        'start_time' => '12:00:00',
+                        'end_time' => '20:00:00'
+                    ));
+                } else {
+                    $wpdb->insert($table_schedules, array(
+                        'service_id' => $srv_id,
+                        'day_type' => 'daily',
+                        'start_time' => '10:00:00',
+                        'end_time' => '22:00:00'
+                    ));
+                }
 			}
 		}
 		

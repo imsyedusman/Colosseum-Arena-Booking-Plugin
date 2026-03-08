@@ -142,7 +142,7 @@ class CABA_Frontend_Ajax {
 			), array('id' => $cust_id));
 		}
 
-		$status = ($payment_method == 'onsite') ? 'pending_payment_onsite' : 'pending';
+		$status = ($payment_method == 'onsite') ? 'pending_payment_onsite' : 'pending_payment_online';
 
 		// Create Booking
 		$booking_id = CABA_DB::insert('bookings', array(

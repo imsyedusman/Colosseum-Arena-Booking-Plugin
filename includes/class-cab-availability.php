@@ -49,6 +49,7 @@ class CABA_Availability {
 				WHERE s.room_id = %d 
 				AND b.booking_date = %s 
 				AND b.status != 'cancelled'
+				AND b.status != 'expired'
 			", $room_id, $date_str);
 			
 			$room_bookings = $wpdb->get_results( $sql_bookings, ARRAY_A );
