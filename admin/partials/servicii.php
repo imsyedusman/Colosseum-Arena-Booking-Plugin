@@ -77,9 +77,9 @@ $employees = CABA_DB::get_results('employees');
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Cameră Alocată <span class="text-red-500">*</span></label>
-                    <select name="room_id" required class="w-full border-gray-300 rounded-lg shadow-sm p-3 border focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                        <option value="">Alege camera...</option>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Cameră Alocată</label>
+                    <select name="room_id" class="w-full border-gray-300 rounded-lg shadow-sm p-3 border focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                        <option value="0">Fără cameră</option>
                         <?php foreach($rooms as $r): ?>
                             <option value="<?php echo $r['id']; ?>"><?php echo esc_html($r['name']); ?></option>
                         <?php endforeach; ?>
@@ -87,9 +87,9 @@ $employees = CABA_DB::get_results('employees');
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Angajat / Grup</label>
-                    <select name="employee_id" class="w-full border-gray-300 rounded-lg shadow-sm p-3 border focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                        <option value="0">Niciunul</option>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Angajat / Grup <span class="text-red-500">*</span></label>
+                    <select name="employee_id" required class="w-full border-gray-300 rounded-lg shadow-sm p-3 border focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                        <option value="">Alege angajat...</option>
                         <?php foreach($employees as $e): ?>
                             <option value="<?php echo $e['id']; ?>"><?php echo esc_html($e['name']); ?></option>
                         <?php endforeach; ?>
@@ -120,7 +120,7 @@ $employees = CABA_DB::get_results('employees');
                         <div style="flex: 1; min-width: 200px; padding-bottom: 2px;">
                             <label class="flex items-center cursor-pointer bg-white p-3 rounded-lg border border-gray-300 shadow-sm hover:bg-gray-50 transition">
                                 <input type="checkbox" name="is_per_person" value="1" class="form-checkbox h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
-                                <span class="ml-3 text-sm font-semibold text-gray-700">Preț pe persoană?</span>
+                                <span class="ml-3 text-sm text-gray-700 font-semibold">Preț pe persoană (Se adaugă per participant.)</span>
                             </label>
                         </div>
                     </div>
@@ -262,23 +262,31 @@ jQuery(document).ready(function() {
 let scheduleIndex = 0;
 function addScheduleRow(day_type = 'weekdays', start = '09:00', end = '10:00') {
     let html = `
-    <div class="flex items-center gap-4 bg-gray-50 p-3 rounded border border-gray-200 schedule-row">
-        <div class="w-1/3">
-            <label class="block text-xs text-gray-500 mb-1">Tip Zi</label>
+    <div class="flex items-center gap-2 bg-gray-50 p-3 rounded border border-gray-200 schedule-row overflow-x-auto whitespace-nowrap">
+        <div class="min-w-[180px]">
+            <label class="block text-xs text-gray-500 mb-1">Tip Zi / Zile</label>
             <select name="schedules[${scheduleIndex}][day_type]" class="w-full border-gray-300 rounded p-2 text-sm outline-none">
-                <option value="weekdays" ${day_type==='weekdays'?'selected':''}>În timpul săptămânii (L-V)</option>
+                <option value="daily" ${day_type==='daily'?'selected':''}>Zilnic (L-D)</option>
+                <option value="weekdays" ${day_type==='weekdays'?'selected':''}>Săptămână (L-V)</option>
                 <option value="weekends" ${day_type==='weekends'?'selected':''}>Weekend (S-D)</option>
+                <option value="monday" ${day_type==='monday'?'selected':''}>Luni</option>
+                <option value="tuesday" ${day_type==='tuesday'?'selected':''}>Marți</option>
+                <option value="wednesday" ${day_type==='wednesday'?'selected':''}>Miercuri</option>
+                <option value="thursday" ${day_type==='thursday'?'selected':''}>Joi</option>
+                <option value="friday" ${day_type==='friday'?'selected':''}>Vineri</option>
+                <option value="saturday" ${day_type==='saturday'?'selected':''}>Sâmbătă</option>
+                <option value="sunday" ${day_type==='sunday'?'selected':''}>Duminică</option>
             </select>
         </div>
-        <div class="w-1/4">
+        <div class="w-1/4 min-w-[120px]">
             <label class="block text-xs text-gray-500 mb-1">Ora Start</label>
-            <input type="time" name="schedules[${scheduleIndex}][start_time]" value="${start}" class="w-full border-gray-300 rounded p-2 text-sm outline-none">
+            <input type="time" name="schedules[${scheduleIndex}][start_time]" value="${start}" class="w-full border-gray-300 rounded p-2 text-sm outline-none bg-white">
         </div>
-        <div class="w-1/4">
+        <div class="w-1/4 min-w-[120px]">
             <label class="block text-xs text-gray-500 mb-1">Ora End</label>
-            <input type="time" name="schedules[${scheduleIndex}][end_time]" value="${end}" class="w-full border-gray-300 rounded p-2 text-sm outline-none">
+            <input type="time" name="schedules[${scheduleIndex}][end_time]" value="${end}" class="w-full border-gray-300 rounded p-2 text-sm outline-none bg-white">
         </div>
-        <div class="w-auto ml-auto self-end">
+        <div class="w-auto ml-auto self-end min-w-[40px]">
             <button type="button" onclick="jQuery(this).closest('.schedule-row').remove()" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-trash"></i></button>
         </div>
     </div>`;

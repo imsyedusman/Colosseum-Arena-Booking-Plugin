@@ -12,33 +12,47 @@ class CABA_Availability {
 
 		$room_id = $service['room_id'];
 		
-		// Determine day type
-		$day_of_week = date('w', strtotime($date_str));
-		$day_type = ($day_of_week == 0 || $day_of_week == 6) ? 'weekends' : 'weekdays';
+		// Determine day type variables
+		$day_of_week = date('w', strtotime($date_str)); // 0=Sun, 1=Mon...
+		$is_weekend = ($day_of_week == 0 || $day_of_week == 6);
+        $day_name = strtolower(date('l', strtotime($date_str))); // monday, tuesday...
 
-		// Get schedules for this service and day_type
+		// Get all schedules
 		$table_schedules = CABA_DB::get_table_name( 'schedules' );
-		$schedules = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_schedules WHERE service_id = %d AND day_type = %s ORDER BY start_time ASC", $service_id, $day_type ), ARRAY_A );
+		$all_schedules = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_schedules WHERE service_id = %d ORDER BY start_time ASC", $service_id ), ARRAY_A );
+
+        // Filter valid schedules for THIS specific date
+		$schedules = array();
+        foreach($all_schedules as $s) {
+            $dt = $s['day_type'];
+            if ($dt === 'daily') $schedules[] = $s;
+            else if ($dt === 'weekdays' && !$is_weekend) $schedules[] = $s;
+            else if ($dt === 'weekends' && $is_weekend) $schedules[] = $s;
+            else if ($dt === $day_name) $schedules[] = $s;
+        }
 
 		if ( empty( $schedules ) ) {
 			return array(); // No slots configured for this day
 		}
 
-		// Get existing bookings for the EXACT same room on that date (excluding cancelled)
-		$table_bookings = CABA_DB::get_table_name( 'bookings' );
-		
-		// To completely prevent double bookings for Standard/Premium (which share Birthday Room),
-		// we fetch ALL bookings in this room_id.
-		$sql_bookings = $wpdb->prepare("
-			SELECT b.start_time, b.end_time 
-			FROM $table_bookings b
-			LEFT JOIN " . CABA_DB::get_table_name('services') . " s ON b.service_id = s.id
-			WHERE s.room_id = %d 
-			AND b.booking_date = %s 
-			AND b.status != 'cancelled'
-		", $room_id, $date_str);
-		
-		$room_bookings = $wpdb->get_results( $sql_bookings, ARRAY_A );
+		$room_bookings = array();
+		if ( $room_id > 0 ) {
+			// Get existing bookings for the EXACT same room on that date (excluding cancelled)
+			$table_bookings = CABA_DB::get_table_name( 'bookings' );
+			
+			// To completely prevent double bookings for Standard/Premium (which share Birthday Room),
+			// we fetch ALL bookings in this room_id.
+			$sql_bookings = $wpdb->prepare("
+				SELECT b.start_time, b.end_time 
+				FROM $table_bookings b
+				LEFT JOIN " . CABA_DB::get_table_name('services') . " s ON b.service_id = s.id
+				WHERE s.room_id = %d 
+				AND b.booking_date = %s 
+				AND b.status != 'cancelled'
+			", $room_id, $date_str);
+			
+			$room_bookings = $wpdb->get_results( $sql_bookings, ARRAY_A );
+		}
 
 		$duration_mins = intval($service['duration']);
 		if ($duration_mins <= 0) $duration_mins = 60; // fallback safety

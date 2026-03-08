@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     route: 'get_calendar_events'
                 },
                 success: function(response) {
-                    successCallback(response.data);
+                    successCallback(response);
                 },
                 error: function() {
                     failureCallback();

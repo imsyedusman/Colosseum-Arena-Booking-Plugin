@@ -465,19 +465,52 @@
     color: #0f172a;
 }
 
-.cab-cal-grid-header,
-.cab-cal-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    text-align: center;
-    gap: 4px;
+.cab-participants-selector {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    max-width: 140px;
 }
 
-.cab-cal-grid-header span {
+.cab-p-btn {
+    background: var(--cab-secondary);
+    border: 1px solid var(--cab-border);
+    color: var(--cab-text-dark);
+    font-size: 1.25rem;
+    font-weight: bold;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.cab-p-btn:hover {
+    background: var(--cab-secondary-hover);
+    border-color: var(--cab-text-muted);
+}
+
+.cab-participants-selector input[type="number"] {
+    flex: 1;
+    text-align: center;
+    font-size: 1.1rem;
     font-weight: 600;
-    font-size: 0.8rem;
-    color: #64748b;
-    padding-bottom: 8px;
+    padding: 0;
+    height: 40px;
+    border: 1px solid var(--cab-border);
+    border-radius: 8px;
+    -moz-appearance: textfield;
+}
+
+.cab-participants-selector input[type="number"]::-webkit-outer-spin-button,
+.cab-participants-selector input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0;
 }
 
 .cab-cal-day {

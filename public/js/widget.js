@@ -218,11 +218,21 @@ document.addEventListener('DOMContentLoaded', function () {
                 function (date) {
                     if (CabState.schedules.length === 0) return true; // Disable all if no schedules
 
-                    let day = date.getDay(); // 0 is Sunday, 6 is Saturday
-                    let isWeekend = (day === 0 || day === 6);
-                    if (isWeekend && !hasWeekends) return true;
-                    if (!isWeekend && !hasWeekdays) return true;
-                    return false;
+                    let dayNum = date.getDay(); // 0 is Sunday, 1 is Monday...
+                    let isWeekend = (dayNum === 0 || dayNum === 6);
+                    let daysMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+                    let dayName = daysMap[dayNum];
+
+                    let isAllowed = false;
+                    for (let sch of CabState.schedules) {
+                        let dt = sch.day_type;
+                        if (dt === 'daily') isAllowed = true;
+                        else if (dt === 'weekdays' && !isWeekend) isAllowed = true;
+                        else if (dt === 'weekends' && isWeekend) isAllowed = true;
+                        else if (dt === dayName) isAllowed = true;
+                    }
+
+                    return !isAllowed; // return true to DISABLE the date
                 }
             ],
             onChange: function (selectedDates, dateStr, instance) {

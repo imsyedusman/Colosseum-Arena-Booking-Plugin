@@ -194,21 +194,106 @@ class Colosseum_Arena_Booking_Activator {
 		}
 
 		// Activity Services array
-		$activity_names = array('LaserTag', 'Human Foosball', 'Paintball', 'Gotcha', 'GellyBall', 'Jocuri Interactive');
-		foreach ($activity_names as $act) {
-			$srv_id = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $table_services WHERE name = %s", $act ) );
+		$activity_config = array(
+            array(
+                'name' => 'LaserTag', 
+                'duration' => 20, 
+                'price' => 30.00, 
+                'min_p' => 6, 
+                'max_p' => 20, 
+                'per_person' => 1,
+                'options' => wp_json_encode(array(
+                    array('name' => '1 Joc (20 min)', 'duration' => 20, 'price' => 30.00),
+                    array('name' => '2 Jocuri (40 min)', 'duration' => 40, 'price' => 50.00)
+                ))
+            ),
+            array(
+                'name' => 'Human Foosball', 
+                'duration' => 15, 
+                'price' => 25.00, 
+                'min_p' => 8, 
+                'max_p' => 20, 
+                'per_person' => 1,
+                'options' => wp_json_encode(array(
+                    array('name' => '1 Joc (15 min)', 'duration' => 15, 'price' => 25.00),
+                    array('name' => '2 Jocuri (30 min)', 'duration' => 30, 'price' => 40.00)
+                ))
+            ),
+            array(
+                'name' => 'Paintball', 
+                'duration' => 60, 
+                'price' => 60.00, 
+                'min_p' => 6, 
+                'max_p' => 10, 
+                'per_person' => 1,
+                'options' => wp_json_encode(array(
+                    array('name' => 'Pachet 200 bile (60 min)', 'duration' => 60, 'price' => 60.00),
+                    array('name' => 'Pachet 400 bile (90 min)', 'duration' => 90, 'price' => 100.00)
+                ))
+            ),
+            array(
+                'name' => 'Gotcha', 
+                'duration' => 30, 
+                'price' => 35.00, 
+                'min_p' => 6, 
+                'max_p' => 12, 
+                'per_person' => 1,
+                'options' => wp_json_encode(array(
+                    array('name' => '1 Joc (30 min)', 'duration' => 30, 'price' => 35.00),
+                    array('name' => '2 Jocuri (60 min)', 'duration' => 60, 'price' => 60.00)
+                ))
+            ),
+            array(
+                'name' => 'GellyBall', 
+                'duration' => 30, 
+                'price' => 35.00, 
+                'min_p' => 6, 
+                'max_p' => 10, 
+                'per_person' => 1,
+                'options' => wp_json_encode(array(
+                    array('name' => '1 Joc (30 min)', 'duration' => 30, 'price' => 35.00),
+                    array('name' => '2 Jocuri (60 min)', 'duration' => 60, 'price' => 60.00)
+                ))
+            ),
+            array(
+                'name' => 'Jocuri Interactive', 
+                'duration' => 30, 
+                'price' => 30.00, 
+                'min_p' => 6, 
+                'max_p' => 16, 
+                'per_person' => 1,
+                'options' => wp_json_encode(array(
+                    array('name' => '1 Joc (30 min)', 'duration' => 30, 'price' => 30.00),
+                    array('name' => '2 Jocuri (60 min)', 'duration' => 60, 'price' => 50.00)
+                ))
+            )
+        );
+
+		foreach ($activity_config as $act) {
+			$srv_id = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $table_services WHERE name = %s", $act['name'] ) );
 			if (!$srv_id) {
 				$wpdb->insert($table_services, array(
-					'name' => $act,
+					'name' => $act['name'],
 					'category_id' => $cat_ids['Activități'],
+                    'room_id' => 0, // No specific room conflict
 					'employee_id' => $emp_ids['Colosseum Staff'],
-					'duration' => 60,
-					'price' => 50.00,
-					'min_participants' => 6,
-					'max_participants' => 20,
-					'is_per_person' => 1
+					'duration' => $act['duration'],
+					'price' => $act['price'],
+					'min_participants' => $act['min_p'],
+					'max_participants' => $act['max_p'],
+					'is_per_person' => $act['per_person'],
+                    'pricing_options' => $act['options']
 				));
+                $srv_id = $wpdb->insert_id;
 				$inserted['services']++;
+
+                // Give it a universal default daily schedule
+                $wpdb->insert($table_schedules, array(
+                    'service_id' => $srv_id,
+                    'day_type' => 'daily',
+                    'start_time' => '10:00:00',
+                    'end_time' => '22:00:00'
+                ));
 			}
 		}
 		

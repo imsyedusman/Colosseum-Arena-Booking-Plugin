@@ -52,7 +52,7 @@ class Colosseum_Arena_Booking {
 		$this->loader->add_action( 'wp_ajax_nopriv_cab_frontend_ajax', $plugin_public, 'ajax_handler' );
 		
 		// WooCommerce Integration Hooks
-		$this->loader->add_action( 'template_redirect', $plugin_public, 'maybe_add_booking_product_to_cart' );
+		$this->loader->add_action( 'init', $plugin_public, 'init_woocommerce_hooks' );
 		$this->loader->add_action( 'woocommerce_order_status_completed', $plugin_public, 'complete_booking_on_payment' );
 	}
 

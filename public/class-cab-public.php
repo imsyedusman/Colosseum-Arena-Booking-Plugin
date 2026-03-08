@@ -80,7 +80,9 @@ class Colosseum_Arena_Booking_Public {
 		}
 	}
 	
-	public function maybe_add_booking_product_to_cart() {
+	public function init_woocommerce_hooks() {
+		if ( ! class_exists( 'WooCommerce' ) ) return;
+		
 		add_action( 'woocommerce_before_calculate_totals', array( $this, 'set_custom_cart_item_price' ), 9999, 1 );
 		add_filter( 'woocommerce_get_item_data', array( $this, 'display_booking_data_in_cart' ), 10, 2 );
 		add_action( 'woocommerce_checkout_create_order_line_item', array( $this, 'save_booking_id_to_order_item' ), 10, 4 );
@@ -102,7 +104,6 @@ class Colosseum_Arena_Booking_Public {
 
 	public function set_custom_cart_item_price( $cart ) {
 		if ( is_admin() && ! defined( 'DOING_AJAX' ) ) return;
-		if ( did_action( 'woocommerce_before_calculate_totals' ) >= 2 ) return;
 
 		foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
 			if ( isset( $cart_item['cab_custom_price'] ) ) {
@@ -115,7 +116,7 @@ class Colosseum_Arena_Booking_Public {
 		if ( isset( $cart_item['cab_service_name'] ) ) {
 			$item_data[] = array(
 				'key'   => 'Serviciu',
-				'value' => $cart_item['cab_service_name']
+				'value' => sanitize_text_field($cart_item['cab_service_name'])
 			);
 		}
 		return $item_data;
