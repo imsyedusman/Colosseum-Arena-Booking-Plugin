@@ -12,7 +12,7 @@ class Colosseum_Arena_Booking_Admin {
 
 	public function enqueue_styles( $hook_suffix ) {
 		// Only load styles on our plugin pages
-		if ( strpos( $hook_suffix, 'colosseum-booking' ) === false ) {
+		if ( strpos( $hook_suffix, 'colosseum-arena-booking' ) === false ) {
 			return;
 		}
 
@@ -26,14 +26,14 @@ class Colosseum_Arena_Booking_Admin {
 	}
 
 	public function enqueue_scripts( $hook_suffix ) {
-		if ( strpos( $hook_suffix, 'colosseum-booking' ) === false ) {
+		if ( strpos( $hook_suffix, 'colosseum-arena-booking' ) === false ) {
 			return;
 		}
 
 		wp_enqueue_script( 'datatables-js', 'https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js', array( 'jquery' ), '1.13.6', true );
 		wp_enqueue_script( 'sweetalert2', 'https://cdn.jsdelivr.net/npm/sweetalert2@11', array(), '11', true );
 		
-		if ( strpos( $hook_suffix, 'colosseum-booking-calendar' ) !== false ) {
+		if ( strpos( $hook_suffix, 'colosseum-arena-booking-calendar' ) !== false ) {
 			wp_enqueue_script( 'fullcalendar-js', 'https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js', array(), '6.1.10', true );
 		}
 
@@ -50,22 +50,22 @@ class Colosseum_Arena_Booking_Admin {
 			'Colosseum Booking',
 			'Colosseum Booking',
 			'manage_options',
-			'colosseum-booking',
+			'colosseum-arena-booking',
 			array( $this, 'display_dashboard' ),
 			'dashicons-calendar-alt',
 			26
 		);
 
-		add_submenu_page( 'colosseum-booking', 'Dashboard', 'Dashboard', 'manage_options', 'colosseum-booking', array( $this, 'display_dashboard' ) );
-		add_submenu_page( 'colosseum-booking', 'Rezervări', 'Rezervări', 'manage_options', 'colosseum-booking-rezervari', array( $this, 'display_rezervari' ) );
-		add_submenu_page( 'colosseum-booking', 'Calendar', 'Calendar', 'manage_options', 'colosseum-booking-calendar', array( $this, 'display_calendar' ) );
-		add_submenu_page( 'colosseum-booking', 'Servicii', 'Servicii', 'manage_options', 'colosseum-booking-servicii', array( $this, 'display_servicii' ) );
-		add_submenu_page( 'colosseum-booking', 'Categorii', 'Categorii', 'manage_options', 'colosseum-booking-categorii', array( $this, 'display_categorii' ) );
-		add_submenu_page( 'colosseum-booking', 'Camere', 'Camere', 'manage_options', 'colosseum-booking-camere', array( $this, 'display_camere' ) );
-		add_submenu_page( 'colosseum-booking', 'Angajați', 'Angajați', 'manage_options', 'colosseum-booking-angajati', array( $this, 'display_angajati' ) );
-		add_submenu_page( 'colosseum-booking', 'Clienți', 'Clienți', 'manage_options', 'colosseum-booking-clienti', array( $this, 'display_clienti' ) );
-		add_submenu_page( 'colosseum-booking', 'Notificări', 'Notificări', 'manage_options', 'colosseum-booking-notificari', array( $this, 'display_notificari' ) );
-		add_submenu_page( 'colosseum-booking', 'Setări', 'Setări', 'manage_options', 'colosseum-booking-setari', array( $this, 'display_setari' ) );
+		add_submenu_page( 'colosseum-arena-booking', 'Dashboard', 'Dashboard', 'manage_options', 'colosseum-arena-booking', array( $this, 'display_dashboard' ) );
+		add_submenu_page( 'colosseum-arena-booking', 'Rezervări', 'Rezervări', 'manage_options', 'colosseum-arena-booking-rezervari', array( $this, 'display_rezervari' ) );
+		add_submenu_page( 'colosseum-arena-booking', 'Calendar', 'Calendar', 'manage_options', 'colosseum-arena-booking-calendar', array( $this, 'display_calendar' ) );
+		add_submenu_page( 'colosseum-arena-booking', 'Servicii', 'Servicii', 'manage_options', 'colosseum-arena-booking-servicii', array( $this, 'display_servicii' ) );
+		add_submenu_page( 'colosseum-arena-booking', 'Categorii', 'Categorii', 'manage_options', 'colosseum-arena-booking-categorii', array( $this, 'display_categorii' ) );
+		add_submenu_page( 'colosseum-arena-booking', 'Camere', 'Camere', 'manage_options', 'colosseum-arena-booking-camere', array( $this, 'display_camere' ) );
+		add_submenu_page( 'colosseum-arena-booking', 'Angajați', 'Angajați', 'manage_options', 'colosseum-arena-booking-angajati', array( $this, 'display_angajati' ) );
+		add_submenu_page( 'colosseum-arena-booking', 'Clienți', 'Clienți', 'manage_options', 'colosseum-arena-booking-clienti', array( $this, 'display_clienti' ) );
+		add_submenu_page( 'colosseum-arena-booking', 'Notificări', 'Notificări', 'manage_options', 'colosseum-arena-booking-notificari', array( $this, 'display_notificari' ) );
+		add_submenu_page( 'colosseum-arena-booking', 'Setări', 'Setări', 'manage_options', 'colosseum-arena-booking-setari', array( $this, 'display_setari' ) );
 	}
 
 	public function display_dashboard() { include plugin_dir_path( __FILE__ ) . 'partials/dashboard.php'; }

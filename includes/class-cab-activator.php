@@ -50,6 +50,10 @@ class Colosseum_Arena_Booking_Activator {
 			category_id int(11),
 			duration int(11) NOT NULL DEFAULT 60,
 			price decimal(10,2) NOT NULL DEFAULT 0.00,
+			min_participants int(11) DEFAULT 1,
+			max_participants int(11) DEFAULT 20,
+			is_per_person tinyint(1) DEFAULT 0,
+			pricing_options text, /* JSON string of array with {name, duration, price} */
 			room_id int(11),
 			employee_id int(11),
 			PRIMARY KEY  (id)
@@ -80,6 +84,7 @@ class Colosseum_Arena_Booking_Activator {
 			booking_date date NOT NULL,
 			start_time time NOT NULL,
 			end_time time NOT NULL,
+			participants_count int(11) DEFAULT 1,
 			status varchar(50) NOT NULL DEFAULT 'pending', /* pending, confirmed, cancelled, ... */
 			payment_method varchar(50), /* online, onsite */
 			total_amount decimal(10,2) NOT NULL DEFAULT 0.00,
@@ -96,107 +101,118 @@ class Colosseum_Arena_Booking_Activator {
 	public static function seed_data() {
 		global $wpdb;
 
+		$inserted = array('categories' => 0, 'rooms' => 0, 'employees' => 0, 'services' => 0);
+
 		// 1. Seed Categories
 		$table_cat = $wpdb->prefix . 'cab_categories';
-		$cat_id = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $table_cat WHERE name = %s", 'Petreceri copii' ) );
-		if ( ! $cat_id ) {
-			$wpdb->insert( $table_cat, array( 'name' => 'Petreceri copii', 'description' => 'Categorii pentru petrecerile copiilor' ) );
-			$cat_id = $wpdb->insert_id;
+		$categories = array('Petreceri copii', 'Activități', 'Teambuilding', 'Evenimente școlare');
+		$cat_ids = array();
+		foreach ($categories as $cat) {
+			$id = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $table_cat WHERE name = %s", $cat ) );
+			if (!$id) {
+				$wpdb->insert( $table_cat, array( 'name' => $cat ) );
+				$id = $wpdb->insert_id;
+				$inserted['categories']++;
+			}
+			$cat_ids[$cat] = $id;
 		}
 
 		// 2. Seed Rooms
 		$table_rooms = $wpdb->prefix . 'cab_rooms';
-		$room_birthday_id = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $table_rooms WHERE name = %s", 'Birthday Room' ) );
-		if ( ! $room_birthday_id ) {
-			$wpdb->insert( $table_rooms, array( 'name' => 'Birthday Room', 'capacity' => 1 ) );
-			$room_birthday_id = $wpdb->insert_id;
-		}
-		
-		$room_vip_id = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $table_rooms WHERE name = %s", 'VIP Birthday Room' ) );
-		if ( ! $room_vip_id ) {
-			$wpdb->insert( $table_rooms, array( 'name' => 'VIP Birthday Room', 'capacity' => 1 ) );
-			$room_vip_id = $wpdb->insert_id;
+		$rooms = array('Birthday Room', 'VIP Birthday Room');
+		$room_ids = array();
+		foreach ($rooms as $room) {
+			$id = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $table_rooms WHERE name = %s", $room ) );
+			if (!$id) {
+				$wpdb->insert( $table_rooms, array( 'name' => $room, 'capacity' => 1 ) );
+				$id = $wpdb->insert_id;
+				$inserted['rooms']++;
+			}
+			$room_ids[$room] = $id;
 		}
 
 		// 3. Seed Employees
 		$table_employees = $wpdb->prefix . 'cab_employees';
-		$emp_party_id = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $table_employees WHERE name = %s", 'Party Bookings' ) );
-		if ( ! $emp_party_id ) {
-			$wpdb->insert( $table_employees, array( 'name' => 'Party Bookings' ) );
-			$emp_party_id = $wpdb->insert_id;
-		}
-
-		$emp_vip_id = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $table_employees WHERE name = %s", 'VIP Bookings' ) );
-		if ( ! $emp_vip_id ) {
-			$wpdb->insert( $table_employees, array( 'name' => 'VIP Bookings' ) );
-			$emp_vip_id = $wpdb->insert_id;
+		$employees = array('Party Bookings', 'VIP Bookings', 'Colosseum Staff');
+		$emp_ids = array();
+		foreach ($employees as $emp) {
+			$id = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $table_employees WHERE name = %s", $emp ) );
+			if (!$id) {
+				$wpdb->insert( $table_employees, array( 'name' => $emp ) );
+				$id = $wpdb->insert_id;
+				$inserted['employees']++;
+			}
+			$emp_ids[$emp] = $id;
 		}
 
 		// 4. Seed Services
 		$table_services = $wpdb->prefix . 'cab_services';
 		$table_schedules = $wpdb->prefix . 'cab_schedules';
 
-		// STANDARD
-		$srv_std_id = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $table_services WHERE name = %s", 'Petrecere copii Standard' ) );
-		if ( ! $srv_std_id ) {
-			$wpdb->insert( $table_services, array(
-				'name' => 'Petrecere copii Standard',
-				'category_id' => $cat_id,
-				'duration' => 150, // 2.5 hours
-				'price' => 1000.00,
-				'room_id' => $room_birthday_id,
-				'employee_id' => $emp_party_id
-			) );
-			$srv_std_id = $wpdb->insert_id;
-			
-			// Schedule Standard
-			$wpdb->insert( $table_schedules, array( 'service_id' => $srv_std_id, 'day_type' => 'weekdays', 'start_time' => '16:00:00', 'end_time' => '18:30:00' ) );
-			$wpdb->insert( $table_schedules, array( 'service_id' => $srv_std_id, 'day_type' => 'weekdays', 'start_time' => '19:30:00', 'end_time' => '22:00:00' ) );
-			$wpdb->insert( $table_schedules, array( 'service_id' => $srv_std_id, 'day_type' => 'weekends', 'start_time' => '12:00:00', 'end_time' => '14:30:00' ) );
-			$wpdb->insert( $table_schedules, array( 'service_id' => $srv_std_id, 'day_type' => 'weekends', 'start_time' => '17:00:00', 'end_time' => '19:30:00' ) );
+		// Birthday schedules array
+		$birthday_schedules = array(
+			array('day_type' => 'weekdays', 'start_time' => '17:00:00', 'end_time' => '20:00:00'),
+			array('day_type' => 'weekdays', 'start_time' => '18:00:00', 'end_time' => '21:00:00'),
+			array('day_type' => 'weekends', 'start_time' => '11:00:00', 'end_time' => '14:00:00'),
+			array('day_type' => 'weekends', 'start_time' => '13:00:00', 'end_time' => '16:00:00'),
+			array('day_type' => 'weekends', 'start_time' => '16:00:00', 'end_time' => '19:00:00'),
+			array('day_type' => 'weekends', 'start_time' => '18:00:00', 'end_time' => '21:00:00')
+		);
+
+		// Birthday Services array
+		$bday_services = array(
+			array('name' => 'Petrecere copii Standard', 'room' => 'Birthday Room', 'employee' => 'Party Bookings'),
+			array('name' => 'Petrecere copii Premium', 'room' => 'Birthday Room', 'employee' => 'Party Bookings'),
+			array('name' => 'Petrecere copii VIP', 'room' => 'VIP Birthday Room', 'employee' => 'VIP Bookings'),
+		);
+
+		foreach ($bday_services as $bs) {
+			$srv_id = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $table_services WHERE name = %s", $bs['name'] ) );
+			if (!$srv_id) {
+				$wpdb->insert($table_services, array(
+					'name' => $bs['name'],
+					'category_id' => $cat_ids['Petreceri copii'],
+					'room_id' => $room_ids[$bs['room']],
+					'employee_id' => $emp_ids[$bs['employee']],
+					'duration' => 180,
+					'price' => 1000.00,
+					'min_participants' => 1,
+					'max_participants' => 20
+				));
+				$srv_id = $wpdb->insert_id;
+				$inserted['services']++;
+
+				foreach ($birthday_schedules as $sch) {
+					$wpdb->insert($table_schedules, array(
+						'service_id' => $srv_id,
+						'day_type' => $sch['day_type'],
+						'start_time' => $sch['start_time'],
+						'end_time' => $sch['end_time']
+					));
+				}
+			}
 		}
 
-		// PREMIUM
-		$srv_prm_id = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $table_services WHERE name = %s", 'Petrecere copii Premium' ) );
-		if ( ! $srv_prm_id ) {
-			$wpdb->insert( $table_services, array(
-				'name' => 'Petrecere copii Premium',
-				'category_id' => $cat_id,
-				'duration' => 180, // 3 hours
-				'price' => 1500.00,
-				'room_id' => $room_birthday_id,
-				'employee_id' => $emp_party_id
-			) );
-			$srv_prm_id = $wpdb->insert_id;
-
-			// Schedule Premium
-			$wpdb->insert( $table_schedules, array( 'service_id' => $srv_prm_id, 'day_type' => 'weekdays', 'start_time' => '17:00:00', 'end_time' => '20:00:00' ) );
-			$wpdb->insert( $table_schedules, array( 'service_id' => $srv_prm_id, 'day_type' => 'weekdays', 'start_time' => '18:00:00', 'end_time' => '21:00:00' ) );
-			$wpdb->insert( $table_schedules, array( 'service_id' => $srv_prm_id, 'day_type' => 'weekends', 'start_time' => '11:00:00', 'end_time' => '14:00:00' ) );
-			$wpdb->insert( $table_schedules, array( 'service_id' => $srv_prm_id, 'day_type' => 'weekends', 'start_time' => '13:00:00', 'end_time' => '16:00:00' ) );
-			$wpdb->insert( $table_schedules, array( 'service_id' => $srv_prm_id, 'day_type' => 'weekends', 'start_time' => '16:00:00', 'end_time' => '19:00:00' ) );
-			$wpdb->insert( $table_schedules, array( 'service_id' => $srv_prm_id, 'day_type' => 'weekends', 'start_time' => '18:00:00', 'end_time' => '21:00:00' ) );
+		// Activity Services array
+		$activity_names = array('LaserTag', 'Human Foosball', 'Paintball', 'Gotcha', 'GellyBall', 'Jocuri Interactive');
+		foreach ($activity_names as $act) {
+			$srv_id = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $table_services WHERE name = %s", $act ) );
+			if (!$srv_id) {
+				$wpdb->insert($table_services, array(
+					'name' => $act,
+					'category_id' => $cat_ids['Activități'],
+					'employee_id' => $emp_ids['Colosseum Staff'],
+					'duration' => 60,
+					'price' => 50.00,
+					'min_participants' => 6,
+					'max_participants' => 20,
+					'is_per_person' => 1
+				));
+				$inserted['services']++;
+			}
 		}
-
-		// VIP
-		$srv_vip_id = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $table_services WHERE name = %s", 'Petrecere copii VIP' ) );
-		if ( ! $srv_vip_id ) {
-			$wpdb->insert( $table_services, array(
-				'name' => 'Petrecere copii VIP',
-				'category_id' => $cat_id,
-				'duration' => 180, // 3 hours
-				'price' => 2000.00,
-				'room_id' => $room_vip_id,
-				'employee_id' => $emp_vip_id
-			) );
-			$srv_vip_id = $wpdb->insert_id;
-
-			// Schedule VIP
-			$wpdb->insert( $table_schedules, array( 'service_id' => $srv_vip_id, 'day_type' => 'weekdays', 'start_time' => '17:00:00', 'end_time' => '20:00:00' ) );
-			$wpdb->insert( $table_schedules, array( 'service_id' => $srv_vip_id, 'day_type' => 'weekends', 'start_time' => '11:00:00', 'end_time' => '14:00:00' ) );
-			$wpdb->insert( $table_schedules, array( 'service_id' => $srv_vip_id, 'day_type' => 'weekends', 'start_time' => '15:00:00', 'end_time' => '18:00:00' ) );
-			$wpdb->insert( $table_schedules, array( 'service_id' => $srv_vip_id, 'day_type' => 'weekends', 'start_time' => '19:00:00', 'end_time' => '22:00:00' ) );
-		}
+		
+		return $inserted;
 	}
 
 }

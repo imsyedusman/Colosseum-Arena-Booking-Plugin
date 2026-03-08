@@ -35,9 +35,6 @@ $employees = CABA_DB::get_results('employees');
                     <td class="p-3 text-gray-600 text-sm"><?php echo esc_html($srv['duration']); ?></td>
                     <td class="p-3 font-semibold text-green-600"><?php echo esc_html($srv['price']); ?></td>
                     <td class="p-3 text-right space-x-2">
-                        <button onclick="editSchedules(<?php echo $srv['id']; ?>, '<?php echo esc_attr($srv['name']); ?>')" class="px-2 py-1 bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200 transition text-sm" title="Orare">
-                            <i class="far fa-clock mr-1"></i> Orare
-                        </button>
                         <button onclick="editService(<?php echo htmlspecialchars(json_encode($srv), ENT_QUOTES, 'UTF-8'); ?>)" class="px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition text-sm" title="Edit">
                             <i class="fas fa-edit mr-1"></i> Edit
                         </button>
@@ -99,15 +96,63 @@ $employees = CABA_DB::get_results('employees');
                     </select>
                 </div>
                 
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-2 gap-3 mb-5">
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Durată (min)</label>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Durată implicită (min)</label>
                         <input type="number" name="duration" min="1" required class="w-full border-gray-300 rounded-lg shadow-sm p-3 border focus:ring-2 focus:ring-blue-500 outline-none transition">
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Preț (RON)</label>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Preț implicit (RON)</label>
                         <input type="number" name="price" step="0.01" min="0" required class="w-full border-gray-300 rounded-lg shadow-sm p-3 border focus:ring-2 focus:ring-blue-500 outline-none transition">
                     </div>
+                </div>
+
+                <div class="col-span-2 mb-5 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                    <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-end;">
+                        <div style="flex: 1; min-width: 150px;">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Min. Participanți</label>
+                            <input type="number" name="min_participants" min="1" value="1" class="w-full border-gray-300 rounded-lg shadow-sm p-3 border focus:ring-2 focus:ring-blue-500 outline-none transition bg-white">
+                        </div>
+                        <div style="flex: 1; min-width: 150px;">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Max. Participanți</label>
+                            <input type="number" name="max_participants" min="1" value="20" class="w-full border-gray-300 rounded-lg shadow-sm p-3 border focus:ring-2 focus:ring-blue-500 outline-none transition bg-white">
+                        </div>
+                        <div style="flex: 1; min-width: 200px; padding-bottom: 2px;">
+                            <label class="flex items-center cursor-pointer bg-white p-3 rounded-lg border border-gray-300 shadow-sm hover:bg-gray-50 transition">
+                                <input type="checkbox" name="is_per_person" value="1" class="form-checkbox h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                                <span class="ml-3 text-sm font-semibold text-gray-700">Preț pe persoană?</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-span-2 mb-4 border-t pt-5">
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="block text-sm font-semibold text-gray-700">Orare și Disponibilitate (Obligatoriu)</label>
+                        <button type="button" onclick="addScheduleRow()" class="text-xs px-3 py-1 bg-green-100 text-green-700 font-medium rounded hover:bg-green-200 transition">
+                            <i class="fas fa-plus mr-1"></i> Adaugă Interval
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500 mb-3">Definiți zilele și intervalele orare în care acest serviciu poate fi rezervat.</p>
+                    <div id="schedules-container" class="space-y-3 max-h-48 overflow-y-auto pr-2 pb-2">
+                        <!-- Options injected here -->
+                    </div>
+                </div>
+
+                <div class="col-span-2 mb-2 border-t pt-5">
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="block text-sm font-semibold text-gray-700">Opțiuni Pachete / Prețuri (Opțional)</label>
+                        <button type="button" onclick="addPricingOption()" class="text-xs px-3 py-1 bg-green-100 text-green-700 font-medium rounded hover:bg-green-200 transition">
+                            <i class="fas fa-plus mr-1"></i> Adaugă Opțiune
+                        </button>
+                    </div>
+                    
+                    <div id="pricing-options-container" class="space-y-2 max-h-48 overflow-y-auto">
+                        <!-- Options injected here -->
+                    </div>
+                    
+                    <!-- Hidden field to store JSON string for submission -->
+                    <input type="hidden" name="pricing_options" id="cab_pricing_options_hidden" value="">
                 </div>
             </div>
             
@@ -119,35 +164,7 @@ $employees = CABA_DB::get_results('employees');
     </div>
 </div>
 
-<!-- Modal Schedules -->
-<div id="modal-schedules" class="cab-modal hidden fixed inset-0 items-center justify-center p-4">
-    <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl overflow-hidden transform transition-all flex flex-col max-h-[90vh]">
-        <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50 shrink-0">
-            <h3 class="text-lg font-bold text-gray-800">Orare: <span id="schedule-service-name" class="text-blue-600"></span></h3>
-            <button class="cab-close-modal text-gray-400 hover:text-gray-700 transition"><i class="fas fa-times text-lg"></i></button>
-        </div>
-        <form class="cab-ajax-form flex-1 overflow-y-auto p-6 bg-white" id="form-schedules">
-            <input type="hidden" name="route" value="save_schedules">
-            <input type="hidden" name="service_id" id="schedule-service-id" value="0">
-            
-            <div class="mb-4 flex justify-between items-center">
-                <p class="text-gray-600 text-sm">Adaugă intervalele orare în care acest pachet / serviciu poate fi rezervat.</p>
-                <button type="button" onclick="addScheduleRow()" class="px-3 py-1.5 bg-green-100 text-green-700 font-medium rounded hover:bg-green-200 transition text-sm">
-                    <i class="fas fa-plus mr-1"></i> Adaugă Interval
-                </button>
-            </div>
-            
-            <div id="schedules-container" class="space-y-3">
-                <!-- Rows injected here -->
-            </div>
-            
-            <div class="flex justify-end gap-3 pt-6 mt-6 border-t border-gray-100 pb-2">
-                <button type="button" class="cab-close-modal px-5 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition">Anulează</button>
-                <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 shadow-md transition">Salvează Orarele</button>
-            </div>
-        </form>
-    </div>
-</div>
+
 
 <script>
 function editService(srv) {
@@ -159,7 +176,88 @@ function editService(srv) {
     jQuery('#modal-service select[name="employee_id"]').val(srv.employee_id);
     jQuery('#modal-service input[name="duration"]').val(srv.duration);
     jQuery('#modal-service input[name="price"]').val(srv.price);
+    
+    jQuery('#modal-service input[name="min_participants"]').val(srv.min_participants || 1);
+    jQuery('#modal-service input[name="max_participants"]').val(srv.max_participants || 20);
+    jQuery('#modal-service input[name="is_per_person"]').prop('checked', srv.is_per_person == 1);
+    
+    // Clear Options
+    jQuery('#pricing-options-container').empty();
+    jQuery('#cab_pricing_options_hidden').val('');
+    
+    if (srv.pricing_options) {
+        try {
+            let opts = JSON.parse(srv.pricing_options);
+            if (Array.isArray(opts)) {
+                opts.forEach(o => addPricingOption(o.name, o.duration, o.price));
+            }
+        } catch(e) {}
+    }
+
+    // Load Schedules dynamically
+    jQuery('#schedules-container').empty();
+    jQuery.post(cab_ajax_obj.ajax_url, {
+        action: 'cab_ajax',
+        nonce: cab_ajax_obj.nonce,
+        route: 'get_schedules',
+        service_id: srv.id
+    }, function(res) {
+        scheduleIndex = 0;
+        if(res.success && res.data.length > 0) {
+            res.data.forEach(sch => {
+                addScheduleRow(sch.day_type, sch.start_time.substring(0,5), sch.end_time.substring(0,5));
+            });
+        } else {
+            addScheduleRow(); // Add an empty row by default
+        }
+    });
 }
+
+function addPricingOption(name = '', duration = '', price = '') {
+    let html = `
+    <div class="flex items-center gap-2 bg-gray-50 p-2 rounded border border-gray-200 pricing-option-row">
+        <div class="w-1/3">
+            <input type="text" class="po-name w-full border-gray-300 rounded p-2 text-sm outline-none" placeholder="Nume opțiune (ex: 1 Joc)" value="${name}">
+        </div>
+        <div class="w-1/3">
+            <input type="number" class="po-duration w-full border-gray-300 rounded p-2 text-sm outline-none" placeholder="Durată min. (ex: 20)" value="${duration}">
+        </div>
+        <div class="w-1/3">
+            <input type="number" step="0.01" class="po-price w-full border-gray-300 rounded p-2 text-sm outline-none" placeholder="Preț (RON)" value="${price}">
+        </div>
+        <div class="w-auto">
+            <button type="button" onclick="jQuery(this).closest('.pricing-option-row').remove()" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-trash"></i></button>
+        </div>
+    </div>`;
+    jQuery('#pricing-options-container').append(html);
+}
+
+jQuery(document).ready(function() {
+    jQuery('#modal-service form').on('submit', function() {
+        let options = [];
+        jQuery('.pricing-option-row').each(function() {
+            let n = jQuery(this).find('.po-name').val();
+            let d = jQuery(this).find('.po-duration').val();
+            let p = jQuery(this).find('.po-price').val();
+            if(n && (p !== '')) {
+                options.push({
+                    name: n,
+                    duration: parseInt(d) || 0,
+                    price: parseFloat(p) || 0
+                });
+            }
+        });
+        jQuery('#cab_pricing_options_hidden').val(options.length ? JSON.stringify(options) : '');
+    });
+
+    // Reset container when clicking Adauga Serviciu
+    jQuery('.cab-open-modal[data-action="add"]').on('click', function(){
+        jQuery('#schedules-container').empty();
+        jQuery('#pricing-options-container').empty();
+        scheduleIndex = 0;
+        addScheduleRow(); // Default new schedule row for new service
+    });
+});
 
 let scheduleIndex = 0;
 function addScheduleRow(day_type = 'weekdays', start = '09:00', end = '10:00') {
@@ -188,26 +286,5 @@ function addScheduleRow(day_type = 'weekdays', start = '09:00', end = '10:00') {
     scheduleIndex++;
 }
 
-function editSchedules(service_id, service_name) {
-    jQuery('#modal-schedules').removeClass('hidden').addClass('flex');
-    jQuery('#schedule-service-id').val(service_id);
-    jQuery('#schedule-service-name').text(service_name);
-    jQuery('#schedules-container').empty();
-    
-    // Fetch existing schedules
-    jQuery.post(cab_ajax_obj.ajax_url, {
-        action: 'cab_ajax',
-        nonce: cab_ajax_obj.nonce,
-        route: 'get_schedules',
-        service_id: service_id
-    }, function(res) {
-        if(res.success && res.data.length > 0) {
-            res.data.forEach(sch => {
-                addScheduleRow(sch.day_type, sch.start_time.substring(0,5), sch.end_time.substring(0,5));
-            });
-        } else {
-            addScheduleRow(); // Add an empty row by default
-        }
-    });
-}
+
 </script>

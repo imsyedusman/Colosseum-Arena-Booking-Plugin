@@ -1,0 +1,153 @@
+{
+  "categories": [
+    {"name": "Petreceri copii", "description": "Categorii pentru petrecerile copiilor"},
+    {"name": "Activități", "description": "Servicii bazate pe activități individuale sau de grup"},
+    {"name": "Teambuilding", "description": "Evenimente corporate"},
+    {"name": "Evenimente școlare", "description": "Ieșiri școlare"}
+  ],
+  "rooms": [
+    {"name": "Birthday Room", "capacity": 1},
+    {"name": "VIP Birthday Room", "capacity": 1}
+  ],
+  "employees": [
+    {"name": "Party Bookings", "email": "", "phone": ""},
+    {"name": "VIP Bookings", "email": "", "phone": ""},
+    {"name": "Colosseum Staff", "email": "", "phone": ""}
+  ],
+  "services": [
+    {
+      "name": "Petrecere copii Standard",
+      "category": "Petreceri copii",
+      "room": "Birthday Room",
+      "employee": "Party Bookings",
+      "duration": 150,
+      "price": 1000.00,
+      "min_participants": 1,
+      "max_participants": 20,
+      "is_per_person": 0,
+      "pricing_options": [],
+      "schedules": [
+        {"day_type": "weekdays", "start_time": "16:00:00", "end_time": "18:30:00"},
+        {"day_type": "weekdays", "start_time": "19:30:00", "end_time": "22:00:00"},
+        {"day_type": "weekends", "start_time": "12:00:00", "end_time": "14:30:00"},
+        {"day_type": "weekends", "start_time": "17:00:00", "end_time": "19:30:00"}
+      ]
+    },
+    {
+      "name": "Petrecere copii Premium",
+      "category": "Petreceri copii",
+      "room": "Birthday Room",
+      "employee": "Party Bookings",
+      "duration": 180,
+      "price": 1500.00,
+      "min_participants": 1,
+      "max_participants": 20,
+      "is_per_person": 0,
+      "pricing_options": [],
+      "schedules": [
+        {"day_type": "weekdays", "start_time": "17:00:00", "end_time": "20:00:00"},
+        {"day_type": "weekdays", "start_time": "18:00:00", "end_time": "21:00:00"},
+        {"day_type": "weekends", "start_time": "11:00:00", "end_time": "14:00:00"},
+        {"day_type": "weekends", "start_time": "13:00:00", "end_time": "16:00:00"},
+        {"day_type": "weekends", "start_time": "16:00:00", "end_time": "19:00:00"},
+        {"day_type": "weekends", "start_time": "18:00:00", "end_time": "21:00:00"}
+      ]
+    },
+    {
+      "name": "Petrecere copii VIP",
+      "category": "Petreceri copii",
+      "room": "VIP Birthday Room",
+      "employee": "VIP Bookings",
+      "duration": 180,
+      "price": 2000.00,
+      "min_participants": 1,
+      "max_participants": 20,
+      "is_per_person": 0,
+      "pricing_options": [],
+      "schedules": [
+        {"day_type": "weekdays", "start_time": "17:00:00", "end_time": "20:00:00"},
+        {"day_type": "weekends", "start_time": "11:00:00", "end_time": "14:00:00"},
+        {"day_type": "weekends", "start_time": "15:00:00", "end_time": "18:00:00"},
+        {"day_type": "weekends", "start_time": "19:00:00", "end_time": "22:00:00"}
+      ]
+    },
+    {
+      "name": "Laser Tag",
+      "category": "Activități",
+      "duration": 20,
+      "price": 30.00,
+      "min_participants": 6,
+      "max_participants": 20,
+      "is_per_person": 1,
+      "pricing_options": [
+        {"name": "1 Joc (20 min)", "duration": 20, "price": 30.00},
+        {"name": "2 Jocuri (40 min)", "duration": 40, "price": 50.00}
+      ]
+    },
+    {
+      "name": "Human Foosball",
+      "category": "Activități",
+      "duration": 15,
+      "price": 15.00,
+      "min_participants": 8,
+      "max_participants": 20,
+      "is_per_person": 1,
+      "pricing_options": [
+        {"name": "1 Runda (15 min)", "duration": 15, "price": 15.00},
+        {"name": "2 Runde (30 min)", "duration": 30, "price": 25.00}
+      ]
+    },
+    {
+      "name": "Paintball",
+      "category": "Activități",
+      "duration": 90,
+      "price": 100.00,
+      "min_participants": 6,
+      "max_participants": 10,
+      "is_per_person": 1,
+      "pricing_options": [
+        {"name": "150 Bile", "duration": 90, "price": 100.00},
+        {"name": "200 Bile", "duration": 90, "price": 130.00}
+      ]
+    },
+    {
+      "name": "Gotcha",
+      "category": "Activități",
+      "duration": 30,
+      "price": 50.00,
+      "min_participants": 6,
+      "max_participants": 12,
+      "is_per_person": 1,
+      "pricing_options": [
+        {"name": "30 min / 100 Bile", "duration": 30, "price": 50.00},
+        {"name": "60 min / 200 Bile", "duration": 60, "price": 100.00}
+      ]
+    },
+    {
+      "name": "Gellyball",
+      "category": "Activități",
+      "duration": 30,
+      "price": 35.00,
+      "min_participants": 6,
+      "max_participants": 10,
+      "is_per_person": 1,
+      "pricing_options": [
+        {"name": "30 min", "duration": 30, "price": 35.00},
+        {"name": "60 min", "duration": 60, "price": 60.00}
+      ]
+    },
+    {
+      "name": "Jocuri Interactive",
+      "category": "Activități",
+      "duration": 30,
+      "price": 30.00,
+      "min_participants": 6,
+      "max_participants": 16,
+      "is_per_person": 1,
+      "pricing_options": [
+        {"name": "30 min", "duration": 30, "price": 30.00},
+        {"name": "60 min", "duration": 60, "price": 50.00}
+      ]
+    }
+  ]
+}

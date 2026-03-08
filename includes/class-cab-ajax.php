@@ -134,6 +134,11 @@ class CABA_Ajax {
 		$room_id = intval( $_POST['room_id'] );
 		$employee_id = intval( $_POST['employee_id'] );
 
+        $min_participants = isset($_POST['min_participants']) ? intval($_POST['min_participants']) : 1;
+        $max_participants = isset($_POST['max_participants']) ? intval($_POST['max_participants']) : 20;
+        $is_per_person = isset($_POST['is_per_person']) ? intval($_POST['is_per_person']) : 0;
+        $pricing_options = isset($_POST['pricing_options']) ? wp_unslash($_POST['pricing_options']) : '';
+
 		if ( empty( $name ) ) wp_send_json_error( 'Numele serviciului este obligatoriu' );
 
 		$data = array(
@@ -142,16 +147,37 @@ class CABA_Ajax {
 			'duration' => $duration,
 			'price' => $price,
 			'room_id' => $room_id,
-			'employee_id' => $employee_id
+			'employee_id' => $employee_id,
+            'min_participants' => $min_participants,
+            'max_participants' => $max_participants,
+            'is_per_person' => $is_per_person,
+            'pricing_options' => $pricing_options
 		);
 
 		if ( $id > 0 ) {
 			CABA_DB::update( 'services', $data, array( 'id' => $id ) );
-			wp_send_json_success( 'Serviciu actualizat' );
+            $service_id = $id;
 		} else {
 			CABA_DB::insert( 'services', $data );
-			wp_send_json_success( 'Serviciu adăugat' );
+            global $wpdb;
+            $service_id = $wpdb->insert_id;
 		}
+
+        // Save inline schedules
+        $schedules = isset($_POST['schedules']) ? $_POST['schedules'] : array();
+        CABA_DB::delete('schedules', array('service_id' => $service_id));
+        foreach($schedules as $sch) {
+            if (!empty($sch['day_type']) && !empty($sch['start_time']) && !empty($sch['end_time'])) {
+                CABA_DB::insert('schedules', array(
+                    'service_id' => $service_id,
+                    'day_type' => sanitize_text_field($sch['day_type']),
+                    'start_time' => sanitize_text_field($sch['start_time']),
+                    'end_time' => sanitize_text_field($sch['end_time'])
+                ));
+            }
+        }
+
+        wp_send_json_success( $id > 0 ? 'Serviciu actualizat' : 'Serviciu adăugat' );
 	}
 
 	private static function delete_service() {
@@ -191,8 +217,14 @@ class CABA_Ajax {
 	// --- Settings ---
 	private static function import_seed_data() {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-cab-activator.php';
-		Colosseum_Arena_Booking_Activator::seed_data();
-		wp_send_json_success('Datele inițiale au fost importate/refăcute.');
+		$counts = Colosseum_Arena_Booking_Activator::seed_data();
+		
+		$msg = 'Datele demo au fost adăugate cu succes. ';
+		$msg .= 'Categorii: ' . $counts['categories'] . ', ';
+		$msg .= 'Servicii: ' . $counts['services'] . ', ';
+		$msg .= 'Camere: ' . $counts['rooms'] . '.';
+
+		wp_send_json_success($msg);
 	}
 
     private static function save_settings() {
@@ -226,6 +258,7 @@ class CABA_Ajax {
 		$status = sanitize_text_field( $_POST['status'] );
 		$payment_method = sanitize_text_field( $_POST['payment_method'] );
         $total_amount = floatval($_POST['total_amount']);
+        $participants_count = isset($_POST['participants_count']) ? intval($_POST['participants_count']) : 1;
 
 		$data = array(
 			'service_id' => $service_id,
@@ -235,7 +268,8 @@ class CABA_Ajax {
 			'end_time' => $end_time,
 			'status' => $status,
 			'payment_method' => $payment_method,
-            'total_amount' => $total_amount
+            'total_amount' => $total_amount,
+            'participants_count' => $participants_count
 		);
 
 		if ( $id > 0 ) {

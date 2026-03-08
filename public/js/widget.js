@@ -5,6 +5,12 @@ document.addEventListener('DOMContentLoaded', function () {
         service_id: 0,
         service_name: '',
         service_price: 0,
+        min_p: 1,
+        max_p: 20,
+        is_per_person: 0,
+        participants_count: 1,
+        pricing_options: null,
+        pricing_option_index: -1,
         date: '',
         start_time: '',
         end_time: '',
@@ -14,8 +20,11 @@ document.addEventListener('DOMContentLoaded', function () {
             email: '',
             phone: ''
         },
-        payment_method: 'onsite'
+        payment_method: 'onsite',
+        schedules: []
     };
+
+    let fpInstance = null;
 
     const loader = document.getElementById('cab-loader');
 
@@ -52,12 +61,22 @@ document.addEventListener('DOMContentLoaded', function () {
                         <div class="cab-cat-header" style="font-weight:700; color:var(--cab-primary); margin-top:0.5rem;">${cat.name}</div>
                     `;
                         cat.services.forEach(srv => {
+                            let pricingOptsAttr = srv.pricing_options ? srv.pricing_options.replace(/"/g, '&quot;') : '';
+                            let schedulesAttr = srv.schedules ? JSON.stringify(srv.schedules).replace(/"/g, '&quot;') : '[]';
                             html += `
-                            <div class="cab-service-card" data-id="${srv.id}" data-name="${srv.name}" data-price="${srv.price}">
+                            <div class="cab-service-card" 
+                                data-id="${srv.id}" 
+                                data-name="${srv.name}" 
+                                data-price="${srv.price}"
+                                data-min-p="${srv.min_participants || 1}"
+                                data-max-p="${srv.max_participants || 20}"
+                                data-per-person="${srv.is_per_person || 0}"
+                                data-options="${pricingOptsAttr}"
+                                data-schedules="${schedulesAttr}">
                                 <div class="cab-svc-name">${srv.name}</div>
                                 <div class="cab-svc-info">
                                     <span><i class="far fa-clock"></i> ${srv.duration} min</span>
-                                    <span class="cab-svc-price">${parseFloat(srv.price).toFixed(2)} RON</span>
+                                    <span class="cab-svc-price">${parseFloat(srv.price).toFixed(2)} RON${srv.is_per_person == 1 ? '/pers' : ''}</span>
                                 </div>
                             </div>
                         `;
@@ -74,8 +93,22 @@ document.addEventListener('DOMContentLoaded', function () {
                             CabState.service_id = this.getAttribute('data-id');
                             CabState.service_name = this.getAttribute('data-name');
                             CabState.service_price = this.getAttribute('data-price');
+                            CabState.min_p = parseInt(this.getAttribute('data-min-p'), 10);
+                            CabState.max_p = parseInt(this.getAttribute('data-max-p'), 10);
+                            CabState.is_per_person = parseInt(this.getAttribute('data-per-person'), 10);
+
+                            let optionsRaw = this.getAttribute('data-options');
+                            CabState.pricing_options = optionsRaw ? JSON.parse(optionsRaw) : null;
+
+                            let schedulesRaw = this.getAttribute('data-schedules');
+                            CabState.schedules = schedulesRaw ? JSON.parse(schedulesRaw) : [];
+
+                            CabState.participants_count = CabState.min_p;
+                            CabState.pricing_option_index = -1;
 
                             document.getElementById('btn-next-1').disabled = false;
+
+                            initFlatpickr();
                         });
                     });
                 } else {
@@ -85,29 +118,133 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     document.getElementById('btn-next-1').addEventListener('click', function () {
-        goToStep(2);
-    });
+        if (CabState.is_per_person || (CabState.pricing_options && CabState.pricing_options.length > 0)) {
+            // Setup Step 1b
+            document.getElementById('cab-min-max-label').innerText = `Min ${CabState.min_p} - Max ${CabState.max_p}`;
+            document.getElementById('cab-participants-input').value = CabState.participants_count;
+            document.getElementById('cab-participants-input').min = CabState.min_p;
+            document.getElementById('cab-participants-input').max = CabState.max_p;
 
-    // Step 2 - Date Select
-    document.getElementById('cab-date-input').addEventListener('change', function () {
-        CabState.date = this.value;
-        if (CabState.date) {
-            document.getElementById('btn-next-2').disabled = false;
+            if (CabState.is_per_person) {
+                document.getElementById('cab-participants-group').style.display = 'block';
+            } else {
+                document.getElementById('cab-participants-group').style.display = 'none';
+            }
+
+            if (CabState.pricing_options && CabState.pricing_options.length > 0) {
+                document.getElementById('cab-options-group').style.display = 'block';
+                let optHtml = '';
+                CabState.pricing_options.forEach((opt, idx) => {
+                    optHtml += `
+                    <label class="cab-pricing-option">
+                        <input type="radio" name="cab-svc-opt" value="${idx}">
+                        <div class="cab-option-content">
+                            <strong>${opt.name}</strong>
+                            <span>${parseFloat(opt.price).toFixed(2)} RON${CabState.is_per_person ? '/pers' : ''}</span>
+                        </div>
+                    </label>
+                    `;
+                });
+                document.getElementById('cab-pricing-options-list').innerHTML = optHtml;
+
+                // Bind options
+                document.querySelectorAll('input[name="cab-svc-opt"]').forEach(rad => {
+                    rad.addEventListener('change', function () {
+                        CabState.pricing_option_index = parseInt(this.value, 10);
+                        checkStep1bValid();
+                    });
+                });
+            } else {
+                document.getElementById('cab-options-group').style.display = 'none';
+            }
+
+            checkStep1bValid();
+            goToStep('1b');
         } else {
-            document.getElementById('btn-next-2').disabled = true;
+            // Skip directly to Date logic
+            goToStep(2);
         }
     });
 
-    document.getElementById('btn-next-2').addEventListener('click', function () {
-        loadSlots();
-        goToStep(3);
+    function checkStep1bValid() {
+        let valid = true;
+        if (CabState.pricing_options && CabState.pricing_options.length > 0 && CabState.pricing_option_index === -1) {
+            valid = false;
+        }
+        document.getElementById('btn-next-1b').disabled = !valid;
+    }
+
+    // Step 1b Listeners
+    document.getElementById('cab-p-minus').addEventListener('click', function () {
+        if (CabState.participants_count > CabState.min_p) {
+            CabState.participants_count--;
+            document.getElementById('cab-participants-input').value = CabState.participants_count;
+        }
     });
 
-    // Step 3 - Slots
+    document.getElementById('cab-p-plus').addEventListener('click', function () {
+        if (CabState.participants_count < CabState.max_p) {
+            CabState.participants_count++;
+            document.getElementById('cab-participants-input').value = CabState.participants_count;
+        }
+    });
+
+    document.getElementById('cab-participants-input').addEventListener('change', function () {
+        let val = parseInt(this.value, 10);
+        if (isNaN(val) || val < CabState.min_p) val = CabState.min_p;
+        if (val > CabState.max_p) val = CabState.max_p;
+        CabState.participants_count = val;
+        this.value = val;
+    });
+
+    document.getElementById('btn-next-1b').addEventListener('click', function () {
+        goToStep(2);
+    });
+
+    // Step 2 - Date & Time Select
+    function initFlatpickr() {
+        let hasWeekdays = CabState.schedules.some(s => s.day_type === 'weekdays');
+        let hasWeekends = CabState.schedules.some(s => s.day_type === 'weekends');
+
+        if (fpInstance) {
+            fpInstance.destroy();
+        }
+
+        fpInstance = flatpickr("#cab-date-input", {
+            locale: "ro",
+            minDate: "today",
+            inline: true,
+            disable: [
+                function (date) {
+                    if (CabState.schedules.length === 0) return true; // Disable all if no schedules
+
+                    let day = date.getDay(); // 0 is Sunday, 6 is Saturday
+                    let isWeekend = (day === 0 || day === 6);
+                    if (isWeekend && !hasWeekends) return true;
+                    if (!isWeekend && !hasWeekdays) return true;
+                    return false;
+                }
+            ],
+            onChange: function (selectedDates, dateStr, instance) {
+                CabState.date = dateStr;
+                CabState.start_time = '';
+                CabState.end_time = '';
+                document.getElementById('btn-next-2').disabled = true;
+
+                if (CabState.date) {
+                    document.getElementById('cab-slots-wrapper').style.display = 'block';
+                    loadSlots();
+                } else {
+                    document.getElementById('cab-slots-wrapper').style.display = 'none';
+                }
+            }
+        });
+    }
+
     function loadSlots() {
         showLoader();
         document.getElementById('cab-slots-container').innerHTML = '';
-        document.getElementById('btn-next-3').disabled = true;
+        document.getElementById('btn-next-2').disabled = true;
         CabState.start_time = '';
         CabState.end_time = '';
 
@@ -145,7 +282,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             CabState.start_time = this.getAttribute('data-start');
                             CabState.end_time = this.getAttribute('data-end');
 
-                            document.getElementById('btn-next-3').disabled = false;
+                            document.getElementById('btn-next-2').disabled = false;
                         });
                     });
                 } else {
@@ -154,12 +291,12 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     }
 
-    document.getElementById('btn-next-3').addEventListener('click', function () {
-        goToStep(4);
+    document.getElementById('btn-next-2').addEventListener('click', function () {
+        goToStep(3);
     });
 
-    // Step 4 - Customer
-    document.getElementById('btn-next-4').addEventListener('click', function () {
+    // Step 3 - Customer
+    document.getElementById('btn-next-3').addEventListener('click', function () {
         let form = document.getElementById('cab-customer-form');
         if (!form.checkValidity()) {
             form.reportValidity();
@@ -171,16 +308,32 @@ document.addEventListener('DOMContentLoaded', function () {
         CabState.customer.email = document.getElementById('cab-email').value;
         CabState.customer.phone = document.getElementById('cab-phone').value;
 
-        // Prepare summary
+        // Prepare summary (Calculate final price)
+        let fp = CabState.service_price;
+        let optName = '-';
+        if (CabState.pricing_option_index >= 0 && CabState.pricing_options && CabState.pricing_options[CabState.pricing_option_index]) {
+            fp = CabState.pricing_options[CabState.pricing_option_index].price;
+            optName = CabState.pricing_options[CabState.pricing_option_index].name;
+        }
+        if (CabState.is_per_person) {
+            fp = fp * CabState.participants_count;
+        }
+
         document.getElementById('sum-service').innerText = CabState.service_name;
+        document.getElementById('sum-participants').innerText = CabState.is_per_person ? CabState.participants_count : '-';
+        document.getElementById('sum-participants-row').style.display = CabState.is_per_person ? 'block' : 'none';
+
+        document.getElementById('sum-option').innerText = optName;
+        document.getElementById('sum-option-row').style.display = (CabState.pricing_options && CabState.pricing_options.length > 0) ? 'block' : 'none';
+
         document.getElementById('sum-date').innerText = CabState.date.split('-').reverse().join('.');
         document.getElementById('sum-time').innerText = CabState.start_time + ' - ' + CabState.end_time;
-        document.getElementById('sum-price').innerText = parseFloat(CabState.service_price).toFixed(2);
+        document.getElementById('sum-price').innerText = parseFloat(fp).toFixed(2);
 
-        goToStep(5);
+        goToStep(4);
     });
 
-    // Step 5 - Payment & Submit
+    // Step 4 - Payment & Submit
     document.querySelectorAll('input[name="cab-payment"]').forEach(radio => {
         radio.addEventListener('change', function () {
             CabState.payment_method = this.value;
@@ -198,6 +351,8 @@ document.addEventListener('DOMContentLoaded', function () {
             date: CabState.date,
             start_time: CabState.start_time,
             end_time: CabState.end_time,
+            participants_count: CabState.participants_count,
+            pricing_option_index: CabState.pricing_option_index,
             payment_method: CabState.payment_method,
             first_name: CabState.customer.first_name,
             last_name: CabState.customer.last_name,
@@ -233,10 +388,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (typeof step === 'number') {
             document.querySelectorAll('.step-dot').forEach(d => {
-                if (parseInt(d.getAttribute('data-step')) <= step) d.classList.add('active');
+                let sVal = d.getAttribute('data-step') === '1b' ? 1.5 : parseInt(d.getAttribute('data-step'), 10);
+                if (sVal <= step) d.classList.add('active');
                 else d.classList.remove('active');
             });
-            document.getElementById('cab-progress-bar').style.width = (step * 20) + '%';
+            document.getElementById('cab-progress-bar').style.width = (step * 25) + '%';
         } else {
             // success step
             document.getElementById('cab-progress-bar').style.width = '100%';

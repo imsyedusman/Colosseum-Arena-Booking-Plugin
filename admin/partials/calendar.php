@@ -1,29 +1,29 @@
-<div class="wrap cab-wrap p-6 bg-gray-50 min-h-screen">
+<div class="wrap caba-wrap p-6 bg-gray-50 min-h-screen">
     <div class="mb-6">
         <h1 class="text-3xl font-bold text-gray-800">Calendar Rezervări</h1>
         <p class="text-gray-600 mt-1">Trage evenimentele pentru a le schimba data sau ora. Apasă pe un eveniment pentru a-l edita în meniul Rezervări.</p>
     </div>
     
     <div class="bg-white rounded-lg shadow p-6 border border-gray-100">
-        <div id="cab-calendar"></div>
+        <div id="colosseum-arena-calendar"></div>
     </div>
 </div>
 
 <style>
 /* Adjust FullCalendar elements slightly to match our flat style */
-.fc .fc-toolbar-title {
+#colosseum-arena-calendar .fc .fc-toolbar-title {
     font-size: 1.5rem !important;
     font-weight: 700 !important;
     color: #1f2937;
 }
-.fc .fc-button-primary {
+#colosseum-arena-calendar .fc .fc-button-primary {
     background-color: #2563eb !important;
     border-color: #2563eb !important;
 }
-.fc .fc-button-primary:hover {
+#colosseum-arena-calendar .fc .fc-button-primary:hover {
     background-color: #1d4ed8 !important;
 }
-.fc-event {
+#colosseum-arena-calendar .fc-event {
     cursor: pointer;
     border-radius: 4px;
     padding: 2px 4px;
@@ -34,7 +34,8 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    var calendarEl = document.getElementById('cab-calendar');
+    var calendarEl = document.getElementById('colosseum-arena-calendar');
+    if(!calendarEl) return;
     
     var calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
@@ -58,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     route: 'get_calendar_events'
                 },
                 success: function(response) {
-                    successCallback(response);
+                    successCallback(response.data);
                 },
                 error: function() {
                     failureCallback();
@@ -72,9 +73,7 @@ document.addEventListener('DOMContentLoaded', function() {
             updateEvent(info.event);
         },
         eventClick: function(info) {
-            // Usually we'd open a modal, but right now linking to the booking page is enough
-            // Let's redirect them to the bookings page to edit there, to keep it simple.
-            window.location.href = '?page=colosseum-booking-rezervari';
+            window.location.href = '?page=colosseum-arena-booking-rezervari';
         }
     });
     

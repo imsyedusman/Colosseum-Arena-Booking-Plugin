@@ -1,7 +1,13 @@
 <div class="wrap cab-wrap p-6 bg-gray-50 min-h-screen border-t border-gray-200">
     <div class="max-w-4xl">
-        <h1 class="text-3xl font-bold text-gray-800 mb-8">Setări Sistem</h1>
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Setări Sistem</h1>
         
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-8 rounded shadow-sm">
+            <h3 class="text-blue-800 font-bold mb-1"><i class="fas fa-code mr-1"></i> Shortcode Rezervări</h3>
+            <p class="text-blue-700 text-sm">Pentru a afișa formularul de rezervare pe site-ul dvs., copiați și inserați următorul shortcode pe orice pagină (ex: Elementor, Gutenberg, secțiune Text):</p>
+            <code class="block bg-white p-2 mt-2 border border-blue-200 rounded text-blue-900 font-mono font-bold text-md">[colosseum_booking_widget]</code>
+        </div>
+
         <form class="cab-ajax-form bg-white shadow rounded-lg p-6 border border-gray-100 mb-8">
             <input type="hidden" name="route" value="save_settings">
             
@@ -29,30 +35,38 @@
             </div>
         </form>
         
-        <div class="bg-white shadow rounded-lg p-6 border border-red-100 border-l-4 border-l-red-500">
-            <h3 class="text-lg font-bold text-red-700 mb-2">Depanare și Resetare</h3>
-            <p class="text-sm text-gray-600 mb-4">Folosește acest buton pentru a regenera pachetele standard (VIP, Premium, Standard), camerele și intervalele orare de bază. Nu va șterge datele existente, dar dacă lipsesc le va adăuga.</p>
+        <div class="bg-white shadow rounded-lg p-6 border border-gray-100">
+            <h3 class="text-lg font-bold text-gray-800 mb-2">Date Demo (Seed)</h3>
+            <p class="text-sm text-gray-600 mb-4">Folosiți acest buton pentru a adăuga pachetele și configurațiile implicite (Categorii, Camere, Angajați, Servicii, Orare).</p>
             
-            <button type="button" id="cab-btn-seed" class="px-6 py-3 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 shadow transition">
-                <i class="fas fa-database mr-2"></i> Importă datele inițiale
-            </button>
+            <div class="flex gap-3 mt-4 border-t pt-4">
+                <button type="button" id="cab-btn-seed" class="px-6 py-3 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 shadow transition">
+                    <i class="fas fa-database mr-2"></i> Adaugă date demo
+                </button>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
 jQuery(document).ready(function($) {
+    // Default built-in Seed
     $('#cab-btn-seed').on('click', function() {
         Swal.fire({
             title: 'Confirmare import',
-            text: "Ești sigur că vrei să re-creezi datele default (dacă lipsesc)?",
+            text: "Sunteți sigur că doriți să adăugați datele demo implicite?",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'Da, importă'
+            confirmButtonText: 'Da, adaugă',
+			cancelButtonText: 'Anulează'
         }).then((result) => {
             if(result.isConfirmed) {
-                Swal.fire('Se încarcă...', '', 'info');
-                Swal.showLoading();
+                Swal.fire({
+					title: 'Se procesează...',
+					text: 'Așteptați importul structurilor din fișier.',
+					allowOutsideClick: false,
+					didOpen: () => { Swal.showLoading(); }
+				});
                 
                 $.post(cab_ajax_obj.ajax_url, {
                     action: 'cab_ajax',

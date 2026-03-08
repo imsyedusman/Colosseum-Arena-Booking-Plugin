@@ -40,6 +40,7 @@ class CABA_Frontend_Ajax {
 		
 		foreach($services as $srv) {
 			$cat_id = $srv['category_id'] ? $srv['category_id'] : 0;
+            $srv['schedules'] = CABA_DB::get_by('schedules', 'service_id', $srv['id']);
 			$grouped[$cat_id]['services'][] = $srv;
 		}
 		
@@ -79,6 +80,9 @@ class CABA_Frontend_Ajax {
 		$email = sanitize_email( $_POST['email'] );
 		$phone = sanitize_text_field( $_POST['phone'] );
 
+		$participants_count = isset($_POST['participants_count']) ? intval($_POST['participants_count']) : 1;
+		$pricing_option_index = isset($_POST['pricing_option_index']) ? intval($_POST['pricing_option_index']) : -1;
+
 		if(empty($first_name) || empty($last_name) || empty($email) || empty($phone)) {
 			wp_send_json_error('Vă rugăm completați toate datele de contact.');
 		}
@@ -100,6 +104,22 @@ class CABA_Frontend_Ajax {
 		}
 
 		$service = CABA_DB::get_row('services', $service_id);
+		
+		// Pricing Calculation
+		$final_price = $service['price'];
+		$options = json_decode($service['pricing_options'], true);
+		if ($pricing_option_index >= 0 && !empty($options[$pricing_option_index])) {
+			$final_price = $options[$pricing_option_index]['price'];
+			// Update duration/end_time if the option has a specific duration
+			if (!empty($options[$pricing_option_index]['duration'])) {
+				$duration = $options[$pricing_option_index]['duration'];
+				$end_time = date('H:i:s', strtotime($start_time) + ($duration * 60));
+			}
+		}
+
+		if ($service['is_per_person']) {
+			$final_price = $final_price * $participants_count;
+		}
 
 		// Handle Customer
 		// Check if customer exists by email
@@ -131,9 +151,10 @@ class CABA_Frontend_Ajax {
 			'booking_date' => $date,
 			'start_time' => $start_time,
 			'end_time' => $end_time,
+			'participants_count' => $participants_count,
 			'status' => $status,
 			'payment_method' => $payment_method,
-			'total_amount' => $service['price']
+			'total_amount' => $final_price
 		));
 
 		// Email Notifications (Using WP Mail)
@@ -141,14 +162,14 @@ class CABA_Frontend_Ajax {
 
 		// WooCommerce Integration Trigger
 		if($payment_method == 'online' && get_option('cab_wc_enabled', 0)) {
-			$wc_url = self::process_woocommerce($booking_id, $service);
+			$wc_url = self::process_woocommerce($booking_id, $service, $final_price);
 			wp_send_json_success(array('redirect' => $wc_url));
 		}
 
 		wp_send_json_success(array('message' => 'Rezervare creată cu succes! Veți primi un email de confirmare în scurt timp.'));
 	}
 
-	private static function process_woocommerce($booking_id, $service) {
+	private static function process_woocommerce($booking_id, $service, $final_price) {
 		$product_id = intval(get_option('cab_wc_product_id', 0));
 		
 		if(class_exists('WooCommerce') && $product_id > 0) {
@@ -157,8 +178,8 @@ class CABA_Frontend_Ajax {
 			// Add product to cart with custom price
 			$cart_item_data = array(
 				'cab_booking_id' => $booking_id,
-				'cab_custom_price' => $service['price'],
-				'cab_service_name' => 'Avans / Plata integrala Rezervare: ' . $service['name']
+				'cab_custom_price' => $final_price,
+				'cab_service_name' => 'Rezervare: ' . $service['name']
 			);
 			WC()->cart->add_to_cart($product_id, 1, 0, array(), $cart_item_data);
 			

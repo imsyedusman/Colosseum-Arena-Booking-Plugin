@@ -19,6 +19,7 @@ $customers = CABA_DB::get_results('customers');
                     <th class="border-b p-3 font-semibold">Data & Ora</th>
                     <th class="border-b p-3 font-semibold">Client</th>
                     <th class="border-b p-3 font-semibold">Serviciu</th>
+                    <th class="border-b p-3 font-semibold text-center">Partic.</th>
                     <th class="border-b p-3 font-semibold">Status</th>
                     <th class="border-b p-3 font-semibold">Plată</th>
                     <th class="border-b p-3 font-semibold">Total(RON)</th>
@@ -38,6 +39,7 @@ $customers = CABA_DB::get_results('customers');
                         <div class="text-xs text-gray-500"><?php echo esc_html($b['email']); ?></div>
                     </td>
                     <td class="p-3 text-gray-700 font-medium text-sm"><?php echo esc_html($b['service_name'] ? $b['service_name'] : '-'); ?></td>
+                    <td class="p-3 font-semibold text-center text-sm"><?php echo esc_html($b['participants_count']); ?></td>
                     <td class="p-3">
                         <?php if($b['status'] == 'confirmed'): ?>
                             <span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">Confirmat</status>
@@ -139,6 +141,11 @@ $customers = CABA_DB::get_results('customers');
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Total (RON)</label>
                     <input type="number" step="0.01" name="total_amount" value="0.00" class="w-full border-gray-300 rounded-lg shadow-sm p-3 border focus:ring-2 focus:ring-blue-500 outline-none transition">
                 </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Participanți</label>
+                    <input type="number" name="participants_count" min="1" value="1" class="w-full border-gray-300 rounded-lg shadow-sm p-3 border focus:ring-2 focus:ring-blue-500 outline-none transition">
+                </div>
             </div>
             
             <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
@@ -161,5 +168,6 @@ function editBooking(b) {
     jQuery('#modal-booking select[name="status"]').val(b.status);
     jQuery('#modal-booking select[name="payment_method"]').val(b.payment_method);
     jQuery('#modal-booking input[name="total_amount"]').val(b.total_amount);
+    jQuery('#modal-booking input[name="participants_count"]').val(b.participants_count || 1);
 }
 </script>

@@ -42,6 +42,20 @@ register_deactivation_hook( __FILE__, 'deactivate_colosseum_arena_booking' );
  */
 require plugin_dir_path( __FILE__ ) . 'includes/class-colosseum-booking.php';
 
+function cab_admin_notice_no_services() {
+    global $wpdb;
+    $table_services = $wpdb->prefix . 'cab_services';
+    $count = $wpdb->get_var("SELECT COUNT(*) FROM $table_services");
+    if ( $count == 0 ) {
+		$settings_url = admin_url('admin.php?page=colosseum-arena-booking-setari');
+        echo '<div class="notice notice-error is-dismissible" style="padding: 15px; border-left-color: #ef4444; background: #fef2f2; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">';
+        echo '<p style="font-size: 16px; margin: 0; color: #991b1b;"><strong>Atenție!</strong> Nu există servicii de rezervare în sistem. Formularul de rezervare nu va funcționa corect pe site.</p>';
+        echo '<p style="margin-top: 10px; margin-bottom: 0;"><a href="'. esc_url($settings_url) .'" class="button button-primary" style="background: #1d4ed8; border-color: #1e3a8a;">Configurează sau Adaugă date demo</a></p>';
+        echo '</div>';
+    }
+}
+add_action( 'admin_notices', 'cab_admin_notice_no_services' );
+
 /**
  * Begins execution of the plugin.
  */

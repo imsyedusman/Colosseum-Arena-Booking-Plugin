@@ -40,36 +40,44 @@ class CABA_Availability {
 		
 		$room_bookings = $wpdb->get_results( $sql_bookings, ARRAY_A );
 
+		$duration_mins = intval($service['duration']);
+		if ($duration_mins <= 0) $duration_mins = 60; // fallback safety
+        
 		$available_slots = array();
 
 		foreach ( $schedules as $sch ) {
-			$slot_start = strtotime( $date_str . ' ' . $sch['start_time'] );
-			$slot_end   = strtotime( $date_str . ' ' . $sch['end_time'] );
+			$window_start = strtotime( $date_str . ' ' . $sch['start_time'] );
+			$window_end   = strtotime( $date_str . ' ' . $sch['end_time'] );
 			
-			// Don't show slots in the past if it's today
-			if ( $date_str == current_time('Y-m-d') && $slot_start <= current_time('timestamp') ) {
-				continue;
-			}
+			// Generate slots of $duration_mins inside this schedule window
+			for ($slot_start = $window_start; $slot_start + ($duration_mins * 60) <= $window_end; $slot_start += ($duration_mins * 60)) {
+				$slot_end = $slot_start + ($duration_mins * 60);
 
-			$is_overlapping = false;
-			
-			foreach ( $room_bookings as $bk ) {
-				$bk_start = strtotime( $date_str . ' ' . $bk['start_time'] );
-				$bk_end   = strtotime( $date_str . ' ' . $bk['end_time'] );
-
-				// Overlap condition: (StartA < EndB) and (EndA > StartB)
-				if ( $slot_start < $bk_end && $slot_end > $bk_start ) {
-					$is_overlapping = true;
-					break;
+				// Don't show slots in the past if it's today
+				if ( $date_str == current_time('Y-m-d') && $slot_start <= current_time('timestamp') ) {
+					continue;
 				}
-			}
 
-			if ( ! $is_overlapping ) {
-				$available_slots[] = array(
-					'start_time' => substr( $sch['start_time'], 0, 5 ),
-					'end_time'   => substr( $sch['end_time'], 0, 5 ),
-					'label'      => substr( $sch['start_time'], 0, 5 ) . ' - ' . substr( $sch['end_time'], 0, 5 )
-				);
+				$is_overlapping = false;
+				
+				foreach ( $room_bookings as $bk ) {
+					$bk_start = strtotime( $date_str . ' ' . $bk['start_time'] );
+					$bk_end   = strtotime( $date_str . ' ' . $bk['end_time'] );
+
+					// Overlap condition: (StartA < EndB) and (EndA > StartB)
+					if ( $slot_start < $bk_end && $slot_end > $bk_start ) {
+						$is_overlapping = true;
+						break;
+					}
+				}
+
+				if ( ! $is_overlapping ) {
+					$available_slots[] = array(
+						'start_time' => date('H:i', $slot_start),
+						'end_time'   => date('H:i', $slot_end),
+						'label'      => date('H:i', $slot_start) . ' - ' . date('H:i', $slot_end)
+					);
+				}
 			}
 		}
 
