@@ -256,27 +256,6 @@ document.addEventListener('DOMContentLoaded', function () {
             locale: "ro",
             minDate: "today",
             inline: true,
-            disable: [
-                function (date) {
-                    if (CabState.schedules.length === 0) return true; // Disable all if no schedules
-
-                    let dayNum = date.getDay(); // 0 is Sunday, 1 is Monday...
-                    let isWeekend = (dayNum === 0 || dayNum === 6);
-                    let daysMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-                    let dayName = normalizeDayType(daysMap[dayNum]);
-
-                    let isAllowed = false;
-                    for (let sch of CabState.schedules) {
-                        let dt = sch.day_type_normalized || normalizeDayType(sch.day_type);
-                        if (dt === 'daily') isAllowed = true;
-                        else if (dt === 'weekdays' && !isWeekend) isAllowed = true;
-                        else if (dt === 'weekends' && isWeekend) isAllowed = true;
-                        else if (dt === dayName) isAllowed = true;
-                    }
-
-                    return !isAllowed; // return true to DISABLE the date
-                }
-            ],
             onChange: function (selectedDates, dateStr, instance) {
                 CabState.date = dateStr;
                 CabState.start_time = '';
@@ -344,7 +323,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     });
                 } else {
                     console.warn(`CAB Warning: No slots returned for Service ID ${CabState.service_id} on ${CabState.date}. Check schedules.`);
-                    document.getElementById('cab-slots-container').innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:#64748b;">Ne pare rău, nu există locuri disponibile în această zi.</p>';
+                    document.getElementById('cab-slots-container').innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:#64748b;">Nu există ore disponibile pentru această dată.</p>';
                 }
             })
             .catch(err => {
