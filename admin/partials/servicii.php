@@ -134,7 +134,7 @@ $employees = CABA_DB::get_results('employees');
                         </button>
                     </div>
                     <p class="text-xs text-gray-500 mb-3">Definiți zilele și intervalele orare în care acest serviciu poate fi rezervat.</p>
-                    <div id="schedules-container" class="space-y-3 max-h-48 overflow-y-auto pr-2 pb-2">
+                    <div id="schedules-container" class="space-y-4 max-h-96 overflow-y-auto pr-2 pb-2">
                         <!-- Options injected here -->
                     </div>
                 </div>
@@ -205,7 +205,7 @@ function editService(srv) {
         scheduleIndex = 0;
         if(res.success && res.data.length > 0) {
             res.data.forEach(sch => {
-                addScheduleRow(sch.day_type, sch.start_time.substring(0,5), sch.end_time.substring(0,5));
+                addScheduleRow(sch.day_type, sch.start_time.substring(0,5), sch.end_time.substring(0,5), sch.breaks);
             });
         } else {
             addScheduleRow(); // Add an empty row by default
@@ -248,6 +248,19 @@ jQuery(document).ready(function() {
             }
         });
         jQuery('#cab_pricing_options_hidden').val(options.length ? JSON.stringify(options) : '');
+
+        // Gather breaks for each schedule row
+        jQuery('.schedule-row').each(function() {
+            let breaks = [];
+            jQuery(this).find('.break-row').each(function() {
+                let bs = jQuery(this).find('.break-start').val();
+                let be = jQuery(this).find('.break-end').val();
+                if (bs && be) {
+                    breaks.push({ start: bs, end: be });
+                }
+            });
+            jQuery(this).find('.breaks-hidden-input').val(JSON.stringify(breaks));
+        });
     });
 
     // Reset container when clicking Adauga Serviciu
@@ -260,38 +273,81 @@ jQuery(document).ready(function() {
 });
 
 let scheduleIndex = 0;
-function addScheduleRow(day_type = 'weekdays', start = '09:00', end = '10:00') {
+function addScheduleRow(day_type = 'weekdays', start = '09:00', end = '10:00', breaks_json = '') {
+    let breaksHtml = '';
+    if (breaks_json) {
+        try {
+            let breaks = JSON.parse(breaks_json);
+            if (Array.isArray(breaks)) {
+                breaks.forEach(b => {
+                    breaksHtml += createBreakRowHtml(b.start, b.end);
+                });
+            }
+        } catch (e) {}
+    }
+
     let html = `
-    <div class="flex items-center gap-2 bg-gray-50 p-3 rounded border border-gray-200 schedule-row overflow-x-auto whitespace-nowrap">
-        <div class="min-w-[180px]">
-            <label class="block text-xs text-gray-500 mb-1">Tip Zi / Zile</label>
-            <select name="schedules[${scheduleIndex}][day_type]" class="w-full border-gray-300 rounded p-2 text-sm outline-none">
-                <option value="daily" ${day_type==='daily'?'selected':''}>Zilnic (L-D)</option>
-                <option value="weekdays" ${day_type==='weekdays'?'selected':''}>Săptămână (L-V)</option>
-                <option value="weekends" ${day_type==='weekends'?'selected':''}>Weekend (S-D)</option>
-                <option value="monday" ${day_type==='monday'?'selected':''}>Luni</option>
-                <option value="tuesday" ${day_type==='tuesday'?'selected':''}>Marți</option>
-                <option value="wednesday" ${day_type==='wednesday'?'selected':''}>Miercuri</option>
-                <option value="thursday" ${day_type==='thursday'?'selected':''}>Joi</option>
-                <option value="friday" ${day_type==='friday'?'selected':''}>Vineri</option>
-                <option value="saturday" ${day_type==='saturday'?'selected':''}>Sâmbătă</option>
-                <option value="sunday" ${day_type==='sunday'?'selected':''}>Duminică</option>
-            </select>
+    <div class="bg-gray-50 p-4 rounded border border-gray-200 schedule-row relative">
+        <div class="flex items-center gap-2 mb-4">
+            <div class="flex-1">
+                <label class="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">Tip Zi / Zile</label>
+                <select name="schedules[${scheduleIndex}][day_type]" class="w-full border-gray-300 rounded p-2 text-sm outline-none bg-white">
+                    <option value="daily" ${day_type==='daily'?'selected':''}>Zilnic (L-D)</option>
+                    <option value="weekdays" ${day_type==='weekdays'?'selected':''}>Săptămână (L-V)</option>
+                    <option value="weekends" ${day_type==='weekends'?'selected':''}>Weekend (S-D)</option>
+                    <option value="monday" ${day_type==='monday'?'selected':''}>Luni</option>
+                    <option value="tuesday" ${day_type==='tuesday'?'selected':''}>Marți</option>
+                    <option value="wednesday" ${day_type==='wednesday'?'selected':''}>Miercuri</option>
+                    <option value="thursday" ${day_type==='thursday'?'selected':''}>Joi</option>
+                    <option value="friday" ${day_type==='friday'?'selected':''}>Vineri</option>
+                    <option value="saturday" ${day_type==='saturday'?'selected':''}>Sâmbătă</option>
+                    <option value="sunday" ${day_type==='sunday'?'selected':''}>Duminică</option>
+                </select>
+            </div>
+            <div class="w-1/4">
+                <label class="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">Start</label>
+                <input type="time" name="schedules[${scheduleIndex}][start_time]" value="${start}" class="w-full border-gray-300 rounded p-2 text-sm outline-none bg-white">
+            </div>
+            <div class="w-1/4">
+                <label class="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">End</label>
+                <input type="time" name="schedules[${scheduleIndex}][end_time]" value="${end}" class="w-full border-gray-300 rounded p-2 text-sm outline-none bg-white">
+            </div>
+            <div class="pt-5">
+                <button type="button" onclick="jQuery(this).closest('.schedule-row').remove()" class="text-red-400 hover:text-red-600 p-2 transition-colors"><i class="fas fa-trash"></i></button>
+            </div>
         </div>
-        <div class="w-1/4 min-w-[120px]">
-            <label class="block text-xs text-gray-500 mb-1">Ora Start</label>
-            <input type="time" name="schedules[${scheduleIndex}][start_time]" value="${start}" class="w-full border-gray-300 rounded p-2 text-sm outline-none bg-white">
-        </div>
-        <div class="w-1/4 min-w-[120px]">
-            <label class="block text-xs text-gray-500 mb-1">Ora End</label>
-            <input type="time" name="schedules[${scheduleIndex}][end_time]" value="${end}" class="w-full border-gray-300 rounded p-2 text-sm outline-none bg-white">
-        </div>
-        <div class="w-auto ml-auto self-end min-w-[40px]">
-            <button type="button" onclick="jQuery(this).closest('.schedule-row').remove()" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-trash"></i></button>
+
+        <div class="breaks-section border-t border-dashed border-gray-200 pt-3">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Pauze / Breaks</span>
+                <button type="button" onclick="addBreakRowToSchedule(this)" class="text-[10px] px-2 py-0.5 bg-blue-50 text-blue-600 rounded hover:bg-blue-100 transition-colors uppercase font-bold">
+                    + Adaugă Pauză
+                </button>
+            </div>
+            <div class="breaks-list space-y-2">
+                ${breaksHtml}
+            </div>
+            <input type="hidden" name="schedules[${scheduleIndex}][breaks]" class="breaks-hidden-input" value='${breaks_json}'>
         </div>
     </div>`;
     jQuery('#schedules-container').append(html);
     scheduleIndex++;
+}
+
+function createBreakRowHtml(start = '', end = '') {
+    return `
+    <div class="flex items-center gap-2 break-row bg-white p-2 rounded border border-gray-100 shadow-sm">
+        <label class="text-[10px] text-gray-400 uppercase font-bold">De la:</label>
+        <input type="time" class="break-start border-gray-200 rounded p-1 text-xs outline-none bg-gray-50" value="${start}">
+        <label class="text-[10px] text-gray-400 uppercase font-bold ml-2">Până la:</label>
+        <input type="time" class="break-end border-gray-200 rounded p-1 text-xs outline-none bg-gray-50" value="${end}">
+        <button type="button" onclick="jQuery(this).closest('.break-row').remove()" class="text-red-300 hover:text-red-500 ml-auto p-1"><i class="fas fa-times-circle"></i></button>
+    </div>`;
+}
+
+function addBreakRowToSchedule(btn) {
+    let row = createBreakRowHtml();
+    jQuery(btn).closest('.breaks-section').find('.breaks-list').append(row);
 }
 
 

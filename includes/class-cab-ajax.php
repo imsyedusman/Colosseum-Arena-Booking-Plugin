@@ -172,7 +172,8 @@ class CABA_Ajax {
                     'service_id' => $service_id,
                     'day_type' => sanitize_text_field($sch['day_type']),
                     'start_time' => sanitize_text_field($sch['start_time']),
-                    'end_time' => sanitize_text_field($sch['end_time'])
+                    'end_time' => sanitize_text_field($sch['end_time']),
+                    'breaks' => isset($sch['breaks']) ? wp_unslash($sch['breaks']) : ''
                 ));
             }
         }
@@ -207,7 +208,8 @@ class CABA_Ajax {
 					'service_id' => $service_id,
 					'day_type' => sanitize_text_field($sch['day_type']),
 					'start_time' => sanitize_text_field($sch['start_time']),
-					'end_time' => sanitize_text_field($sch['end_time'])
+					'end_time' => sanitize_text_field($sch['end_time']),
+					'breaks' => isset($sch['breaks']) ? wp_unslash($sch['breaks']) : ''
 				));
 			}
 		}
@@ -248,7 +250,7 @@ class CABA_Ajax {
     }
     
     // --- Bookings ---
-    private static function save_booking() {
+	private static function save_booking() {
 		$id = isset( $_POST['id'] ) ? intval( $_POST['id'] ) : 0;
 		$service_id = intval( $_POST['service_id'] );
 		$customer_id = intval( $_POST['customer_id'] );
@@ -259,6 +261,11 @@ class CABA_Ajax {
 		$payment_method = sanitize_text_field( $_POST['payment_method'] );
         $total_amount = floatval($_POST['total_amount']);
         $participants_count = isset($_POST['participants_count']) ? intval($_POST['participants_count']) : 1;
+
+		$allowed_statuses = array( 'pending_payment_online', 'confirmed', 'cancelled', 'expired' );
+		if ( ! in_array( $status, $allowed_statuses, true ) ) {
+			$status = 'confirmed';
+		}
 
 		$data = array(
 			'service_id' => $service_id,
@@ -305,10 +312,11 @@ class CABA_Ajax {
 			}
 
 			// Color logic based on status
-			$color = '#3b82f6'; // blue (pending)
+			$color = '#3b82f6'; // blue
 			if($b['status'] == 'confirmed') $color = '#10b981'; // green
 			if($b['status'] == 'cancelled') $color = '#ef4444'; // red
-			if($b['status'] == 'pending_payment_onsite') $color = '#f59e0b'; // orange
+			if($b['status'] == 'pending_payment_online') $color = '#f59e0b'; // orange
+			if($b['status'] == 'expired') $color = '#6b7280'; // gray
 
 			$events[] = array(
 				'id' => $b['id'],

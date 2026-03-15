@@ -23,6 +23,7 @@ define( 'CAB_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 function activate_colosseum_arena_booking() {
 	require_once plugin_dir_path( __FILE__ ) . 'includes/class-cab-activator.php';
 	Colosseum_Arena_Booking_Activator::activate();
+	cab_schedule_expiration_cron();
 }
 
 /**
@@ -67,25 +68,27 @@ function cab_cron_schedules( $schedules ) {
 }
 add_filter( 'cron_schedules', 'cab_cron_schedules' );
 
-function cab_register_expiration_cron() {
+function cab_schedule_expiration_cron() {
     if ( ! wp_next_scheduled( 'cab_expire_pending_bookings_cron' ) ) {
         wp_schedule_event( time(), 'every_five_minutes', 'cab_expire_pending_bookings_cron' );
     }
 }
-add_action( 'wp', 'cab_register_expiration_cron' );
+add_action( 'init', 'cab_schedule_expiration_cron' );
 
 function cab_run_expiration_cron() {
     global $wpdb;
     $table_bookings = $wpdb->prefix . 'cab_bookings';
-    
-    // Find bookings that are pending payment or on-hold and created > 15 minutes ago
-    // created_at is in 'Y-m-d H:i:s' local standard format. Use WP time logic if necessary.
-    $wpdb->query( "
-        UPDATE $table_bookings 
-        SET status = 'expired' 
-        WHERE status IN ('pending_payment_online', 'on-hold') 
-        AND created_at < (NOW() - INTERVAL 15 MINUTE)
-    " );
+
+    $cutoff = gmdate( 'Y-m-d H:i:s', time() - ( 15 * MINUTE_IN_SECONDS ) );
+    $wpdb->query(
+        $wpdb->prepare(
+            "UPDATE $table_bookings
+            SET status = 'expired'
+            WHERE status = 'pending_payment_online'
+            AND created_at < %s",
+            $cutoff
+        )
+    );
 }
 add_action( 'cab_expire_pending_bookings_cron', 'cab_run_expiration_cron' );
 

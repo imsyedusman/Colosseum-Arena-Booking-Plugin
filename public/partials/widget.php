@@ -153,7 +153,7 @@
             <div class="cab-timer-content">
                 <i class="fas fa-hourglass-start cab-timer-icon"></i>
                 <h3>Finalizarea Rezervării</h3>
-                <p>Rezervarea ta este temporar păstrată timp de <strong>15 minute</strong> pentru finalizarea plății.</p>
+                <p>Rezervarea ta este păstrată timp de <strong>15 minute</strong> pentru finalizarea plății.</p>
                 
                 <div class="cab-countdown" id="cab-expiration-timer">15:00</div>
                 

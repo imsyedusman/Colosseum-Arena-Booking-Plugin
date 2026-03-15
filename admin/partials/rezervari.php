@@ -43,12 +43,8 @@ $customers = CABA_DB::get_results('customers');
                     <td class="p-3">
                         <?php if($b['status'] == 'confirmed'): ?>
                             <span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">Confirmat</span>
-                        <?php elseif($b['status'] == 'pending'): ?>
-                            <span class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold">În Așteptare</span>
                         <?php elseif($b['status'] == 'pending_payment_online'): ?>
                             <span class="px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-semibold">Plată Online</span>
-                        <?php elseif($b['status'] == 'pending_payment_onsite'): ?>
-                            <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">Plată Locație</span>
                         <?php elseif($b['status'] == 'expired'): ?>
                             <span class="px-2 py-1 bg-gray-200 text-gray-700 rounded-full text-xs font-semibold">Expirat</span>
                         <?php else: ?>
@@ -126,9 +122,7 @@ $customers = CABA_DB::get_results('customers');
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Status</label>
                     <select name="status" class="w-full border-gray-300 rounded-lg shadow-sm p-3 border focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                        <option value="pending">În Așteptare</option>
                         <option value="pending_payment_online">Plată Online</option>
-                        <option value="pending_payment_onsite">Plată Locație</option>
                         <option value="confirmed">Confirmat</option>
                         <option value="expired">Expirat</option>
                         <option value="cancelled">Anulat</option>

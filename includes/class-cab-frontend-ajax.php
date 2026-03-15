@@ -54,17 +54,17 @@ class CABA_Frontend_Ajax {
 
 		wp_send_json_success( $final );
 	}
-
 	private static function get_slots() {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-cab-availability.php';
 		$service_id = intval( $_POST['service_id'] );
 		$date = sanitize_text_field( $_POST['date'] );
+		$duration = isset( $_POST['duration'] ) ? intval( $_POST['duration'] ) : 0;
 		
 		if(!$service_id || !$date) {
 			wp_send_json_error('Missing parameters');
 		}
 
-		$slots = CABA_Availability::get_available_slots( $service_id, $date );
+		$slots = CABA_Availability::get_available_slots( $service_id, $date, $duration );
 		wp_send_json_success( $slots );
 	}
 
@@ -87,14 +87,30 @@ class CABA_Frontend_Ajax {
 			wp_send_json_error('Vă rugăm completați toate datele de contact.');
 		}
 
+		$service = CABA_DB::get_row('services', $service_id);
+		if ( ! $service ) {
+			wp_send_json_error('Serviciul selectat nu mai este disponibil.');
+		}
+
+		$selected_duration = intval($service['duration']);
+		$options = json_decode($service['pricing_options'], true);
+		if ($pricing_option_index >= 0 && !empty($options[$pricing_option_index])) {
+			$option_duration = isset($options[$pricing_option_index]['duration']) ? intval($options[$pricing_option_index]['duration']) : 0;
+			if ($option_duration > 0) {
+				$selected_duration = $option_duration;
+			}
+		}
+
 		// Double check availability to prevent race conditions
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-cab-availability.php';
-		$slots = CABA_Availability::get_available_slots( $service_id, $date );
+		$slots = CABA_Availability::get_available_slots( $service_id, $date, $selected_duration );
 		
 		$is_valid_slot = false;
 		foreach($slots as $s) {
-			if($s['start_time'] == substr($start_time, 0, 5)) {
+			if($s['start_time'] == substr($start_time, 0, 5) && $s['end_time'] == substr($end_time, 0, 5)) {
 				$is_valid_slot = true;
+				$start_time = $s['start_time'] . ':00';
+				$end_time = $s['end_time'] . ':00';
 				break;
 			}
 		}
@@ -103,18 +119,10 @@ class CABA_Frontend_Ajax {
 			wp_send_json_error('Ne pare rău, acest interval orar nu mai este disponibil.');
 		}
 
-		$service = CABA_DB::get_row('services', $service_id);
-		
 		// Pricing Calculation
 		$final_price = $service['price'];
-		$options = json_decode($service['pricing_options'], true);
 		if ($pricing_option_index >= 0 && !empty($options[$pricing_option_index])) {
 			$final_price = $options[$pricing_option_index]['price'];
-			// Update duration/end_time if the option has a specific duration
-			if (!empty($options[$pricing_option_index]['duration'])) {
-				$duration = $options[$pricing_option_index]['duration'];
-				$end_time = date('H:i:s', strtotime($start_time) + ($duration * 60));
-			}
 		}
 
 		if ($service['is_per_person']) {
@@ -142,7 +150,7 @@ class CABA_Frontend_Ajax {
 			), array('id' => $cust_id));
 		}
 
-		$status = ($payment_method == 'onsite') ? 'pending_payment_onsite' : 'pending_payment_online';
+		$status = ($payment_method == 'online') ? 'pending_payment_online' : 'confirmed';
 
 		// Create Booking
 		$booking_id = CABA_DB::insert('bookings', array(
@@ -198,7 +206,7 @@ class CABA_Frontend_Ajax {
 			'{data_rezervare}' => date('d.m.Y', strtotime($date)),
 			'{ora_rezervare}' => substr($start_time, 0, 5),
 			'{telefon}' => $phone,
-			'{status_plata}' => ($status_plata == 'pending_payment_onsite' ? 'Plata se va face la locație' : 'Așteaptă plata online (WooCommerce)')
+			'{status_plata}' => ($status_plata == 'confirmed' ? 'Rezervarea este confirmată. Plata se va face la locație.' : 'Rezervarea așteaptă plata online (WooCommerce)')
 		);
 
 		// Admin
@@ -210,7 +218,7 @@ class CABA_Frontend_Ajax {
 
 		// Customer
 		$customer_tpl = get_option('cab_email_confirm');
-		if($customer_tpl && $status_plata == 'pending_payment_onsite') {
+		if($customer_tpl && $status_plata == 'confirmed') {
 			$customerBody = str_replace(array_keys($vars), array_values($vars), $customer_tpl);
 			wp_mail($customer_email, 'Confirmare Rezervare Colosseum', nl2br($customerBody), array('Content-Type: text/html; charset=UTF-8'));
 		}

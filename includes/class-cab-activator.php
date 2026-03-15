@@ -65,6 +65,7 @@ class Colosseum_Arena_Booking_Activator {
 			day_type varchar(50) NOT NULL, /* 'weekdays' or 'weekends' */
 			start_time time NOT NULL,
 			end_time time NOT NULL,
+			breaks text, /* JSON array of {start, end} */
 			PRIMARY KEY  (id)
 		) $charset_collate;
 
@@ -85,7 +86,7 @@ class Colosseum_Arena_Booking_Activator {
 			start_time time NOT NULL,
 			end_time time NOT NULL,
 			participants_count int(11) DEFAULT 1,
-			status varchar(50) NOT NULL DEFAULT 'pending', /* pending, confirmed, cancelled, ... */
+			status varchar(50) NOT NULL DEFAULT 'confirmed', /* confirmed, pending_payment_online, cancelled, expired */
 			payment_method varchar(50), /* online, onsite */
 			total_amount decimal(10,2) NOT NULL DEFAULT 0.00,
 			wc_order_id int(11),

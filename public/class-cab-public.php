@@ -87,6 +87,8 @@ class Colosseum_Arena_Booking_Public {
 		add_filter( 'woocommerce_get_item_data', array( $this, 'display_booking_data_in_cart' ), 10, 2 );
 		add_action( 'woocommerce_checkout_create_order_line_item', array( $this, 'save_booking_id_to_order_item' ), 10, 4 );
 		add_filter( 'woocommerce_get_cart_item_from_session', array( $this, 'get_cart_item_from_session' ), 10, 3 );
+		add_action( 'woocommerce_payment_complete', array( $this, 'complete_booking_on_payment' ) );
+		add_action( 'woocommerce_order_status_processing', array( $this, 'complete_booking_on_payment' ) );
 	}
 
 	public function get_cart_item_from_session( $cart_item, $values, $cart_item_key ) {
@@ -132,13 +134,25 @@ class Colosseum_Arena_Booking_Public {
 	 * When a WooCommerce order is completed, mark the corresponding booking as 'confirmed'.
 	 */
 	public function complete_booking_on_payment( $order_id ) {
+		if ( ! class_exists( 'WooCommerce' ) ) {
+			return;
+		}
+
 		$order = wc_get_order( $order_id );
+		if ( ! $order ) {
+			return;
+		}
+
 		foreach ( $order->get_items() as $item_id => $item ) {
 			$booking_id = $item->get_meta( 'cab_booking_id' );
 			if ( $booking_id ) {
 				global $wpdb;
 				$table = $wpdb->prefix . 'cab_bookings';
-				$wpdb->update( $table, array( 'status' => 'confirmed', 'wc_order_id' => $order_id ), array( 'id' => $booking_id ) );
+				$wpdb->update(
+					$table,
+					array( 'status' => 'confirmed', 'wc_order_id' => $order_id ),
+					array( 'id' => $booking_id )
+				);
 			}
 		}
 	}

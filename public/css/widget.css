@@ -423,46 +423,33 @@
     }
 }
 
-/* Custom Native Calendar */
-.cab-calendar-wrapper {
-    width: 100%;
-    max-width: 350px;
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 15px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+/* Modern Flatpickr Overrides */
+.flatpickr-calendar {
+    box-shadow: var(--cab-shadow) !important;
+    border: 1px solid var(--cab-border) !important;
+    border-radius: var(--cab-radius) !important;
+    font-family: inherit !important;
 }
 
-.cab-cal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
+.flatpickr-day.selected,
+.flatpickr-day.selected:hover {
+    background: var(--cab-primary) !important;
+    border-color: var(--cab-primary) !important;
+    color: white !important;
 }
 
-.cab-cal-title {
-    font-weight: 700;
-    font-size: 1.1rem;
-    color: #1e293b;
-    text-transform: capitalize;
+.flatpickr-day.today {
+    border-color: var(--cab-primary) !important;
 }
 
-.cab-cal-nav {
-    background: #f1f5f9;
-    border: none;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    cursor: pointer;
-    font-weight: bold;
-    color: #475569;
-    transition: all 0.2s;
+.flatpickr-day.disabled,
+.flatpickr-day.disabled:hover {
+    color: #cbd5e1 !important;
+    cursor: not-allowed !important;
 }
 
-.cab-cal-nav:hover {
-    background: #e2e8f0;
-    color: #0f172a;
+.flatpickr-calendar.inline {
+    margin: 0 auto;
 }
 
 .cab-participants-selector {
@@ -575,41 +562,7 @@
     background: #f59e0b !important;
 }
 
-.cab-cal-day {
-    padding: 8px 0;
-    border-radius: 6px;
-    cursor: pointer;
-    border: 1px solid transparent;
-    transition: all 0.2s;
-    font-weight: 500;
-    color: #334155;
-    font-size: 0.95rem;
-}
-
-.cab-cal-day:hover:not(.disabled):not(.empty) {
-    background: #eff6ff;
-    border-color: #bfdbfe;
-    color: #1d4ed8;
-}
-
-.cab-cal-day.disabled {
-    background: #f8fafc;
-    color: #cbd5e1;
-    cursor: not-allowed;
-    text-decoration: line-through;
-}
-
-.cab-cal-day.selected {
-    background: var(--cab-primary);
-    color: white;
-    border-color: var(--cab-primary);
-    font-weight: 700;
-}
-
-.cab-cal-day.empty {
-    cursor: default;
-    background: transparent;
-}
+/* End of calendar styles */
 
 /* Responsive */
 @media (max-width: 500px) {
