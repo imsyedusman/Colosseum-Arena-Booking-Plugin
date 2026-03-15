@@ -23,7 +23,8 @@ class CABA_DB {
 	public static function get_by( $table, $column, $value ) {
 		global $wpdb;
 		$table_name = self::get_table_name( $table );
-		return $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE $column = %s", $value ), ARRAY_A );
+		$placeholder = is_numeric( $value ) ? '%d' : '%s';
+		return $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE $column = $placeholder", $value ), ARRAY_A );
 	}
 
 	public static function insert( $table, $data ) {

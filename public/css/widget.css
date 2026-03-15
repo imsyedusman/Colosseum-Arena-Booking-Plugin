@@ -431,6 +431,13 @@
     font-family: inherit !important;
 }
 
+.flatpickr-day,
+.flatpickr-day:hover {
+    color: var(--cab-text-dark) !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
 .flatpickr-day.selected,
 .flatpickr-day.selected:hover {
     background: var(--cab-primary) !important;
@@ -448,6 +455,11 @@
     cursor: not-allowed !important;
 }
 
+.flatpickr-day.prevMonthDay,
+.flatpickr-day.nextMonthDay {
+    color: #cbd5e1 !important;
+}
+
 .flatpickr-calendar.inline {
     margin: 0 auto;
 }
@@ -457,7 +469,7 @@
     align-items: center;
     justify-content: flex-start;
     gap: 0.5rem;
-    max-width: 140px;
+    max-width: 220px;
 }
 
 .cab-p-btn {
@@ -483,6 +495,7 @@
 
 .cab-participants-selector input[type="number"] {
     flex: 1;
+    min-width: 64px;
     text-align: center;
     font-size: 1.1rem;
     font-weight: 600;

@@ -109,6 +109,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                 ...schedule,
                                 day_type_normalized: normalizeDayType(schedule.day_type)
                             })) : [];
+                            console.log('schedules:', CabState.schedules);
 
                             CabState.participants_count = CabState.min_p;
                             CabState.pricing_option_index = -1;
@@ -248,6 +249,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Step 2 - Date & Time Select
     function initFlatpickr() {
+        const availableDates = [];
+        console.log('availableDates:', availableDates);
+        console.log('schedules:', CabState.schedules);
+
         if (fpInstance) {
             fpInstance.destroy();
         }
@@ -256,6 +261,12 @@ document.addEventListener('DOMContentLoaded', function () {
             locale: "ro",
             minDate: "today",
             inline: true,
+            clickOpens: true,
+            allowInput: true,
+            onReady: function (selectedDates, dateStr, instance) {
+                console.log('Flatpickr ready config:', instance.config);
+                console.log('Flatpickr disabled days count:', instance.calendarContainer.querySelectorAll('.flatpickr-day.disabled, .flatpickr-day.flatpickr-disabled').length);
+            },
             onChange: function (selectedDates, dateStr, instance) {
                 CabState.date = dateStr;
                 CabState.start_time = '';

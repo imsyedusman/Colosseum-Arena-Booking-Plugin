@@ -41,6 +41,7 @@ class CABA_Frontend_Ajax {
 		foreach($services as $srv) {
 			$cat_id = $srv['category_id'] ? $srv['category_id'] : 0;
             $srv['schedules'] = CABA_DB::get_by('schedules', 'service_id', $srv['id']);
+			error_log( 'CAB get_services schedule count for service ' . intval( $srv['id'] ) . ': ' . count( $srv['schedules'] ) );
 			$grouped[$cat_id]['services'][] = $srv;
 		}
 		

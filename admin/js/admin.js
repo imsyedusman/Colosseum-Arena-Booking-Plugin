@@ -73,8 +73,17 @@
 			e.preventDefault();
 			var form = $(this);
 			var data = form.serialize() + '&action=cab_ajax&nonce=' + cab_ajax_obj.nonce;
+			console.log('Saving service form');
+			console.log('Admin AJAX route:', form.find('[name="route"]').val());
+			console.log('Admin AJAX payload:', data);
 			
-			$.post(cab_ajax_obj.ajax_url, data, function(res) {
+			$.ajax({
+				url: cab_ajax_obj.ajax_url,
+				type: 'POST',
+				data: data,
+				dataType: 'json'
+			}).done(function(res) {
+				console.log('Admin AJAX response:', res);
 				if (res.success) {
 					Swal.fire('Succes!', res.data, 'success').then(() => {
 						location.reload();
@@ -82,6 +91,9 @@
 				} else {
 					Swal.fire('Eroare', res.data, 'error');
 				}
+			}).fail(function(xhr, status, error) {
+				console.error('Admin AJAX failed:', status, error, xhr.responseText);
+				Swal.fire('Eroare', 'Salvarea a eșuat. Verifică consola browserului și logurile PHP.', 'error');
 			});
 		});
 

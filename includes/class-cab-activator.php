@@ -7,6 +7,22 @@ class Colosseum_Arena_Booking_Activator {
 		self::seed_data();
 	}
 
+	public static function ensure_schema() {
+		global $wpdb;
+		$table_services = $wpdb->prefix . 'cab_services';
+		$table_schedules = $wpdb->prefix . 'cab_schedules';
+
+		$columns = $wpdb->get_col( "SHOW COLUMNS FROM $table_services" );
+		if ( ! in_array( 'pricing_options', $columns, true ) ) {
+			$wpdb->query( "ALTER TABLE $table_services ADD pricing_options TEXT" );
+		}
+
+		$columns = $wpdb->get_col( "SHOW COLUMNS FROM $table_schedules" );
+		if ( ! in_array( 'breaks', $columns, true ) ) {
+			$wpdb->query( "ALTER TABLE $table_schedules ADD breaks TEXT" );
+		}
+	}
+
 	public static function create_tables() {
 		global $wpdb;
 

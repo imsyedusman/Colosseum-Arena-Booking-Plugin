@@ -138,6 +138,10 @@ class CABA_Ajax {
         $max_participants = isset($_POST['max_participants']) ? intval($_POST['max_participants']) : 20;
         $is_per_person = isset($_POST['is_per_person']) ? intval($_POST['is_per_person']) : 0;
         $pricing_options = isset($_POST['pricing_options']) ? wp_unslash($_POST['pricing_options']) : '';
+		$raw_schedules = isset($_POST['schedules']) ? $_POST['schedules'] : array();
+
+		error_log( 'CAB save_service route hit for service ID ' . $id . ' name: ' . $name );
+		error_log( 'CAB save_service raw schedules: ' . wp_json_encode( $raw_schedules ) );
 
 		if ( empty( $name ) ) wp_send_json_error( 'Numele serviciului este obligatoriu' );
 
@@ -163,20 +167,30 @@ class CABA_Ajax {
             $service_id = $wpdb->insert_id;
 		}
 
+		error_log( 'CAB save_service resolved service_id: ' . $service_id );
+
         // Save inline schedules
-        $schedules = isset($_POST['schedules']) ? $_POST['schedules'] : array();
+        $schedules = $raw_schedules;
         CABA_DB::delete('schedules', array('service_id' => $service_id));
+		error_log( 'CAB save_service deleted existing schedules for service_id: ' . $service_id );
+
+		$saved_schedule_count = 0;
         foreach($schedules as $sch) {
+			error_log( 'Saving schedule: ' . wp_json_encode( $sch ) );
             if (!empty($sch['day_type']) && !empty($sch['start_time']) && !empty($sch['end_time'])) {
-                CABA_DB::insert('schedules', array(
+                $insert_id = CABA_DB::insert('schedules', array(
                     'service_id' => $service_id,
                     'day_type' => sanitize_text_field($sch['day_type']),
                     'start_time' => sanitize_text_field($sch['start_time']),
                     'end_time' => sanitize_text_field($sch['end_time']),
                     'breaks' => isset($sch['breaks']) ? wp_unslash($sch['breaks']) : ''
                 ));
+				$saved_schedule_count++;
+				error_log( 'CAB save_service inserted schedule ID: ' . intval( $insert_id ) );
             }
         }
+
+		error_log( 'CAB save_service saved schedule count: ' . $saved_schedule_count );
 
         wp_send_json_success( $id > 0 ? 'Serviciu actualizat' : 'Serviciu adăugat' );
 	}
@@ -192,6 +206,7 @@ class CABA_Ajax {
 	private static function get_schedules() {
 		$service_id = intval( $_POST['service_id'] );
 		$schedules = CABA_DB::get_by('schedules', 'service_id', $service_id);
+		error_log( 'CAB get_schedules for service ' . $service_id . ': ' . wp_json_encode( $schedules ) );
 		wp_send_json_success( $schedules );
 	}
 

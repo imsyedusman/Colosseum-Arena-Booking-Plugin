@@ -37,7 +37,9 @@ class Colosseum_Arena_Booking_Admin {
 			wp_enqueue_script( 'fullcalendar-js', 'https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js', array(), '6.1.10', false );
 		}
 
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/admin.js', array( 'jquery' ), $this->version, false );
+		$admin_script_path = plugin_dir_path( __FILE__ ) . 'js/admin.js';
+		$admin_script_version = file_exists( $admin_script_path ) ? filemtime( $admin_script_path ) : $this->version;
+		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/admin.js', array( 'jquery' ), $admin_script_version, false );
 
 		wp_localize_script( $this->plugin_name, 'cab_ajax_obj', array(
 			'ajax_url' => admin_url( 'admin-ajax.php' ),

@@ -11,7 +11,9 @@ class Colosseum_Arena_Booking_Public {
 	}
 
 	public function enqueue_styles() {
-		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/widget.css', array(), $this->version, 'all' );
+		$style_path = plugin_dir_path( __FILE__ ) . 'css/widget.css';
+		$style_version = file_exists( $style_path ) ? filemtime( $style_path ) : $this->version;
+		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/widget.css', array(), $style_version, 'all' );
 		wp_enqueue_style( 'fontawesome', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css', array(), '6.4.0', 'all' );
         wp_enqueue_style( 'flatpickr-css', 'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css', array(), '4.6.13', 'all' );
 	}
@@ -19,7 +21,9 @@ class Colosseum_Arena_Booking_Public {
 	public function enqueue_scripts() {
         wp_enqueue_script( 'flatpickr-js', 'https://cdn.jsdelivr.net/npm/flatpickr', array(), '4.6.13', true );
         wp_enqueue_script( 'flatpickr-ro', 'https://npmcdn.com/flatpickr/dist/l10n/ro.js', array('flatpickr-js'), '4.6.13', true );
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/widget.js', array( 'jquery', 'flatpickr-js' ), $this->version, true );
+		$script_path = plugin_dir_path( __FILE__ ) . 'js/widget.js';
+		$script_version = file_exists( $script_path ) ? filemtime( $script_path ) : $this->version;
+		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/widget.js', array( 'jquery', 'flatpickr-js' ), $script_version, true );
 		wp_localize_script( $this->plugin_name, 'cab_public_obj', array(
 			'ajax_url' => admin_url( 'admin-ajax.php' ),
 			'nonce'    => wp_create_nonce( 'cab_public_nonce' )

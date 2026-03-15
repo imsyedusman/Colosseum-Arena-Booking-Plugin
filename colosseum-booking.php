@@ -14,6 +14,7 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 define( 'CAB_VERSION', '1.0.0' );
+define( 'CAB_DB_SCHEMA_VERSION', '1.0.2' );
 define( 'CAB_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'CAB_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
@@ -23,6 +24,7 @@ define( 'CAB_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 function activate_colosseum_arena_booking() {
 	require_once plugin_dir_path( __FILE__ ) . 'includes/class-cab-activator.php';
 	Colosseum_Arena_Booking_Activator::activate();
+	update_option( 'cab_db_schema_version', CAB_DB_SCHEMA_VERSION );
 	cab_schedule_expiration_cron();
 }
 
@@ -42,6 +44,19 @@ register_deactivation_hook( __FILE__, 'deactivate_colosseum_arena_booking' );
  * admin-specific hooks, and public-facing site hooks.
  */
 require plugin_dir_path( __FILE__ ) . 'includes/class-colosseum-booking.php';
+
+function cab_maybe_upgrade_schema() {
+	$current_schema_version = get_option( 'cab_db_schema_version', '' );
+	if ( CAB_DB_SCHEMA_VERSION === $current_schema_version ) {
+		return;
+	}
+
+	require_once plugin_dir_path( __FILE__ ) . 'includes/class-cab-activator.php';
+	Colosseum_Arena_Booking_Activator::create_tables();
+	Colosseum_Arena_Booking_Activator::ensure_schema();
+	update_option( 'cab_db_schema_version', CAB_DB_SCHEMA_VERSION );
+}
+add_action( 'init', 'cab_maybe_upgrade_schema', 1 );
 
 function cab_admin_notice_no_services() {
     global $wpdb;
